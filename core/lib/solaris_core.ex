@@ -1,0 +1,2 @@
+defmodule SolarisCore do
+end
