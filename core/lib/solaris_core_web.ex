@@ -1,5 +1,5 @@
 defmodule SolarisCoreWeb do
-  def static_paths, do: ~w(assets fonts images favicon.ico robots.txt)
+  def static_paths, do: []
 
   def router do
     quote do
@@ -13,14 +13,14 @@ defmodule SolarisCoreWeb do
   def channel do
     quote do
       use Phoenix.Channel
+      use Gettext, backend: SolarisCoreWeb.Gettext
     end
   end
 
   def controller do
     quote do
       use Phoenix.Controller,
-        formats: [:html, :json],
-        layouts: [html: SolarisCoreWeb.Layouts]
+        formats: [:json]
 
       use Gettext, backend: SolarisCoreWeb.Gettext
 

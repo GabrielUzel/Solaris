@@ -8,8 +8,8 @@ if config_env() == :prod do
   database_path =
     System.get_env("DATABASE_PATH") ||
       raise """
-      environment variable DATABASE_PATH is missing.
-      For example: /etc/solaris_core/solaris_core.db
+      DATABASE_PATH is missing.
+      In a Desktop/Tauri context, this must be passed by the wrapper.
       """
 
   config :solaris_core, SolarisCore.Repo,
@@ -18,20 +18,16 @@ if config_env() == :prod do
 
   secret_key_base =
     System.get_env("SECRET_KEY_BASE") ||
-      raise """
-      environment variable SECRET_KEY_BASE is missing.
-      You can generate one by calling: mix phx.gen.secret
-      """
+      Base.encode64(:crypto.strong_rand_bytes(48))
 
-  host = System.get_env("PHX_HOST") || "example.com"
-  port = String.to_integer(System.get_env("PORT") || "4000")
+  host = "localhost"
 
-  config :solaris_core, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
+  port = String.to_integer(System.get_env("PORT") || "0")
 
   config :solaris_core, SolarisCoreWeb.Endpoint,
-    url: [host: host, port: 443, scheme: "https"],
+    url: [host: host, port: port, scheme: "http"],
     http: [
-      ip: {0, 0, 0, 0, 0, 0, 0, 0},
+      ip: {127, 0, 0, 1},
       port: port
     ],
     secret_key_base: secret_key_base

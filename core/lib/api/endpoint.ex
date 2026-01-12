@@ -1,17 +1,14 @@
 defmodule SolarisCoreWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :solaris_core
 
+  plug(CORSPlug, origin: ["tauri://localhost", "http://localhost:1420"])
+
   @session_options [
     store: :cookie,
     key: "_solaris_core_key",
-    signing_salt: "JK1HaiS1",
+    signing_salt: System.get_env("SIGNING_SALT") || "dev_signing_salt",
     same_site: "Lax"
   ]
-
-  socket("/live", Phoenix.LiveView.Socket,
-    websocket: [connect_info: [session: @session_options]],
-    longpoll: [connect_info: [session: @session_options]]
-  )
 
   plug(Plug.Static,
     at: "/",
@@ -24,11 +21,6 @@ defmodule SolarisCoreWeb.Endpoint do
     plug(Phoenix.CodeReloader)
     plug(Phoenix.Ecto.CheckRepoStatus, otp_app: :solaris_core)
   end
-
-  plug(Phoenix.LiveDashboard.RequestLogger,
-    param_key: "request_logger",
-    cookie_key: "request_logger"
-  )
 
   plug(Plug.RequestId)
   plug(Plug.Telemetry, event_prefix: [:phoenix, :endpoint])

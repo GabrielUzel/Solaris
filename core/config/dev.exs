@@ -11,13 +11,10 @@ config :solaris_core, SolarisCoreWeb.Endpoint,
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
-  secret_key_base: "DLFi0O36s23Ya1r3qoLf/7FQeUrmcX2Pmo5OLNt7IideUbXvUbCEzyVTNCM6okr2",
+  secret_key_base: System.get_env("SECRET_KEY_BASE") || "development_secret_key_base",
   watchers: []
 
 config :solaris_core, dev_routes: true
-
 config :logger, :console, format: "[$level] $message\n"
-
 config :phoenix, :stacktrace_depth, 20
-
 config :phoenix, :plug_init_mode, :runtime

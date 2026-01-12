@@ -11,8 +11,7 @@ config :solaris_core, SolarisCoreWeb.Endpoint,
     formats: [json: SolarisCoreWeb.ErrorJSON],
     layout: false
   ],
-  pubsub_server: SolarisCore.PubSub,
-  live_view: [signing_salt: "F1b8u3qE"]
+  pubsub_server: SolarisCore.PubSub
 
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",

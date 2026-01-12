@@ -29,3 +29,4 @@ solaris_core-*.tar
 *.db
 *.db-*
 
+.env

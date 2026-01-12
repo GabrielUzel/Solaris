@@ -5,12 +5,15 @@ defmodule SolarisCore.Application do
 
   @impl true
   def start(_type, _args) do
+    ensure_database_directory_exists()
+
     children = [
       SolarisCoreWeb.Telemetry,
       SolarisCore.Repo,
-      {Ecto.Migrator,
-       repos: Application.fetch_env!(:solaris_core, :ecto_repos), skip: skip_migrations?()},
-      {DNSCluster, query: Application.get_env(:solaris_core, :dns_cluster_query) || :ignore},
+      {
+        Ecto.Migrator,
+        repos: Application.fetch_env!(:solaris_core, :ecto_repos), skip: false
+      },
       {Phoenix.PubSub, name: SolarisCore.PubSub},
       SolarisCoreWeb.Endpoint
     ]
@@ -25,7 +28,14 @@ defmodule SolarisCore.Application do
     :ok
   end
 
-  defp skip_migrations?() do
-    System.get_env("RELEASE_NAME") != nil
+  defp ensure_database_directory_exists do
+    conf = Application.get_env(:solaris_core, SolarisCore.Repo)
+    database_path = conf[:database]
+
+    if database_path do
+      database_path
+      |> Path.dirname()
+      |> File.mkdir_p()
+    end
   end
 end
