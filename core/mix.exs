@@ -4,12 +4,13 @@ defmodule SolarisCore.MixProject do
   def project do
     [
       app: :solaris_core,
-      version: "0.1.0",
-      elixir: "~> 1.14",
+      version: "0.2.0",
+      elixir: "~> 1.17",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
+      releases: releases()
     ]
   end
 
@@ -38,7 +39,21 @@ defmodule SolarisCore.MixProject do
       {:bandit, "~> 1.5"},
       {:absinthe, "~> 1.9"},
       {:absinthe_plug, "~> 1.5.9"},
-      {:cors_plug, "~> 3.0.3"}
+      {:cors_plug, "~> 3.0.3"},
+      {:burrito, "~> 1.5"}
+    ]
+  end
+
+  def releases do
+    [
+      solaris_core: [
+        steps: [:assemble, &Burrito.wrap/1],
+        burrito: [
+          targets: [
+            linux: [os: :linux, cpu: :x86_64]
+          ]
+        ]
+      ]
     ]
   end
 
