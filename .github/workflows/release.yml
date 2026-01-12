@@ -1,0 +1,73 @@
+name: Release App
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+  workflow_dispatch:
+
+jobs:
+  build-and-release:
+    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: "27.0"
+          elixir-version: "1.17"
+
+      - name: Build Elixir Binary
+        working-directory: ./core
+        run: |
+          mix deps.get
+          mix burrito.build linux
+
+      - name: Prepare Sidecar for Tauri
+        run: |
+          mkdir -p solaris_app/src-tauri/binaries
+          cp $(find core/burrito_out -name "solaris_core_linux" | head -n 1) \
+             solaris_app/src-tauri/binaries/solaris_core-x86_64-unknown-linux-gnu
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v1
+
+      - name: Install Rust (Stable)
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Linux Dependencies (Tauri)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.0-dev \
+            build-essential \
+            curl \
+            wget \
+            file \
+            libssl-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev
+
+      - name: Build Tauri App
+        working-directory: ./solaris_app
+        env:
+          VITE_API_URL: "http://localhost:0/api/graphql"
+        run: |
+          bun install
+          bun tauri build
+
+      - name: Upload Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: solaris-linux-appimage
+          path: solaris_app/src-tauri/target/release/bundle/appimage/*.AppImage
