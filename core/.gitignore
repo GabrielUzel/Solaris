@@ -30,3 +30,5 @@ solaris_core-*.tar
 *.db-*
 
 .env
+
+/burrito_out
