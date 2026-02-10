@@ -4,6 +4,7 @@ TAURI_SRC_PATH="./src-tauri"
 
 echo "Compilando Phoenix..."
 cd $PHOENIX_PATH
+mix deps.get
 MIX_ENV=prod mix release --overwrite
 
 if [ $? -ne 0 ]; then
