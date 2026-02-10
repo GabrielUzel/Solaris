@@ -60,7 +60,7 @@ jobs:
           VITE_API_URL: "http://localhost:0/api/graphql"
         run: |
           bun install
-          chmod +x ../scripts/build.sh
+          chmod +x ./scripts/build.sh
           bun tauri build
 
       - name: Upload Installer (Debian)
