@@ -22,17 +22,13 @@ jobs:
           otp-version: "27.0"
           elixir-version: "1.17"
 
-      - name: Build Elixir Binary
-        working-directory: ./core
-        run: |
-          mix deps.get
-          mix burrito.build linux
+      - name: Install Zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: 0.13.0
 
-      - name: Prepare Sidecar for Tauri
-        run: |
-          mkdir -p solaris_app/src-tauri/binaries
-          cp $(find core/burrito_out -name "solaris_core_linux" | head -n 1) \
-             solaris_app/src-tauri/binaries/solaris_core-x86_64-unknown-linux-gnu
+      - name: Install XZ-Utils
+        run: sudo apt-get install -y xz-utils
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -59,15 +55,22 @@ jobs:
             librsvg2-dev
 
       - name: Build Tauri App
-        working-directory: ./solaris_app
+        working-directory: ./app
         env:
           VITE_API_URL: "http://localhost:0/api/graphql"
         run: |
           bun install
+          chmod +x ../scripts/build.sh
           bun tauri build
 
-      - name: Upload Installer
+      - name: Upload Installer (Debian)
+        uses: actions/upload-artifact@v4
+        with:
+          name: solaris-linux-deb
+          path: app/src-tauri/target/release/bundle/deb/*.deb
+
+      - name: Upload Installer (AppImage)
         uses: actions/upload-artifact@v4
         with:
           name: solaris-linux-appimage
-          path: solaris_app/src-tauri/target/release/bundle/appimage/*.AppImage
+          path: app/src-tauri/target/release/bundle/appimage/*.AppImage

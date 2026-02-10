@@ -8,11 +8,15 @@ defmodule SolarisCoreWeb.Router do
   scope "/api" do
     pipe_through(:api)
 
-    forward("/graphql", Absinthe.Plug, schema: SolarisCoreWeb.Schema)
+    forward("/graphql", Absinthe.Plug, schema: SolarisCoreWeb.Api.Schema)
+  end
 
-    if Application.compile_env(:solaris_core, :dev_routes) do
+  if Application.compile_env(:solaris_core, :dev_routes) do
+    scope "/api" do
+      pipe_through(:api)
+
       forward("/graphiql", Absinthe.Plug.GraphiQL,
-        schema: SolarisCoreWeb.Schema,
+        schema: SolarisCoreWeb.Api.Schema,
         interface: :simple
       )
     end
