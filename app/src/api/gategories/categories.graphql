@@ -1,0 +1,45 @@
+query GetCategories {
+  categories {
+    id
+    name
+    type
+    color
+    insertedAt
+    updatedAt
+  }
+}
+
+query GetCategoryByName($name: String!) {
+  categoryByName(name: $name) {
+    id
+    name
+    type
+    color
+    insertedAt
+    updatedAt
+  }
+}
+
+mutation CreateCategory($input: CreateCategoryInput!) {
+  createCategory(input: $input) {
+    id
+    name
+    type
+    color
+    insertedAt
+  }
+}
+
+mutation UpdateCategory($id: ID!, $input: UpdateCategoryInput!) {
+  updateCategory(id: $id, input: $input) {
+    id
+    name
+    type
+    color
+    updatedAt
+  }
+}
+
+mutation DeleteCategory($id: ID!) {
+  deleteCategory(id: $id)
+}

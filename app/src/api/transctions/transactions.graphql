@@ -1,0 +1,169 @@
+query GetMonthSummary($accountId: ID!, $year: Int!, $month: Int!) {
+  monthSummary(accountId: $accountId, year: $year, month: $month) {
+    period {
+      year
+      month
+    }
+    totalIncome
+    totalExpense
+    balance
+    transactionsCount
+    byCategory {
+      category
+      total
+      count
+      color
+    }
+  }
+}
+
+query GetTransactionsByDateRange(
+  $accountId: ID!
+  $startDate: String!
+  $endDate: String!
+) {
+  transactionsByDateRange(
+    accountId: $accountId
+    startDate: $startDate
+    endDate: $endDate
+  ) {
+    transactions {
+      id
+      amount
+      type
+      date
+      description
+      categoryName
+      categoryColor
+      accountName
+    }
+    totalIncome
+    totalExpense
+    balance
+    count
+  }
+}
+
+query GetAllTransactions {
+  transactions {
+    id
+    amount
+    type
+    date
+    description
+    categoryId
+    accountId
+  }
+}
+
+query GetTransactionsByAccount($accountId: ID!) {
+  transactionsByAccount(accountId: $accountId) {
+    id
+    amount
+    type
+    date
+    description
+    categoryName
+    accountName
+  }
+}
+
+query GetTransactionsByCategory($categoryId: ID!) {
+  transactionsByCategory(categoryId: $categoryId) {
+    category {
+      id
+      name
+      type
+      color
+    }
+    transactions {
+      id
+      amount
+      type
+      date
+      description
+      categoryName
+      accountName
+    }
+    total
+    count
+  }
+}
+
+query GetTransactionsByType($type: TransactionType!) {
+  transactionsByType(type: $type) {
+    transactions {
+      id
+      amount
+      type
+      date
+      description
+      categoryName
+      accountName
+    }
+    total
+    count
+  }
+}
+
+query GetTransactionsByRecurrence($frequency: RecurrenceFrequency!) {
+  transactionsByRecurrence(frequency: $frequency) {
+    frequency
+    transactions {
+      id
+      amount
+      type
+      date
+      description
+      categoryName
+      accountName
+      recurrence {
+        frequency
+        interval
+        dayOfMonth
+        endDate
+      }
+    }
+    count
+  }
+}
+
+query GetTransactionsForMonth($accountId: ID!, $year: Int!, $month: Int!) {
+  transactionsForMonth(accountId: $accountId, year: $year, month: $month) {
+    id
+    amount
+    type
+    date
+    description
+    categoryName
+    categoryColor
+  }
+}
+
+mutation CreateTransaction($input: CreateTransactionInput!) {
+  createTransaction(input: $input) {
+    id
+    amount
+    type
+    date
+    description
+    categoryId
+    accountId
+  }
+}
+
+mutation UpdateTransaction($id: ID!, $input: UpdateTransactionInput!) {
+  updateTransaction(id: $id, input: $input) {
+    id
+    amount
+    type
+    date
+    description
+    categoryId
+    accountId
+  }
+}
+
+mutation DeleteTransaction($id: ID!) {
+  deleteTransaction(id: $id)
+}

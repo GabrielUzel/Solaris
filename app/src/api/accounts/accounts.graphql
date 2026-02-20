@@ -1,0 +1,55 @@
+query GetAllAccounts {
+  accounts {
+    id
+    name
+    type
+    insertedAt
+    updatedAt
+  }
+}
+
+query GetAccountBalance($id: ID!) {
+  accountBalance(id: $id) {
+    id
+    name
+    type
+    balance
+    insertedAt
+  }
+}
+
+query GetTotalBalance {
+  totalBalance {
+    totalBalance
+    accountsCount
+    accounts {
+      id
+      name
+      type
+      balance
+      totalIncome
+      totalExpense
+    }
+  }
+}
+
+mutation CreateAccount($input: CreateAccountInput!) {
+  createAccount(input: $input) {
+    id
+    name
+    type
+    insertedAt
+  }
+}
+
+mutation UpdateAccount($id: ID!, $input: UpdateAccountInput!) {
+  updateAccount(id: $id, input: $input) {
+    id
+    name
+    type
+  }
+}
+
+mutation DeleteAccount($id: ID!) {
+  deleteAccount(id: $id)
+}

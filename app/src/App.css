@@ -1,16 +1,99 @@
+@import "tailwindcss";
+
 :root {
+  --primary-background: #f7fafa;
+  --secondary-background: #ecfdf5;
+  --menu-background: #ffffff;
+  --hover-background: #d1fae5;
+  --primary-text: #0f172a;
+  --secondary-text: #64748b;
+  --inverted-text: #ffffff;
+  --primary-border: #cbd5e1;
+  --focus-border: #14b8a6;
+  --default-shadow: rgba(0, 0, 0, 0.05);
+  --success-color: #22c55e;
+  --error-color: #e11d48;
+  --warning-color: #eab308;
+  --info-color: #0ea5e9;
+  --primary-color: #14b8a6;
+  --secondary-color: #0f172a;
+  --chart-background: #ffffff;
+  --chart-grid: #e2e8f0;
+  --chart-line-1: #14b8a6;
+  --chart-line-2: #8b5cf6;
+  --chart-line-3: #f43f5e;
+  --button-background: #14b8a6;
+  --button-hover: #0d9488;
+  --card-background: #ffffff;
+  --input-background: #f1f5f9;
+  --badge-background: #f0fdfa;
+
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
   color-scheme: light dark;
-  color: #0f0f0f;
-  background-color: #f6f6f6;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  user-select: none;
-  cursor: default;
+}
+
+.dark {
+  --primary-background: #0a0f1c;
+  --secondary-background: #111828;
+  --menu-background: #0d1220;
+  --hover-background: #153340;
+  --primary-text: #f0fdf9;
+  --secondary-text: #94a3b8;
+  --inverted-text: #0a0f1c;
+  --primary-border: #1e3a4a;
+  --focus-border: #2dd4bf;
+  --default-shadow: rgba(0, 0, 0, 0.4);
+  --success-color: #4ade80;
+  --error-color: #fb7185;
+  --warning-color: #facc15;
+  --info-color: #38bdf8;
+  --primary-color: #2dd4bf;
+  --secondary-color: #e2e8f0;
+  --chart-background: #111828;
+  --chart-grid: #1e293b;
+  --chart-line-1: #2dd4bf;
+  --chart-line-2: #a78bfa;
+  --chart-line-3: #fb7185;
+  --button-background: #14b8a6;
+  --button-hover: #2dd4bf;
+  --card-background: #1a2332;
+  --input-background: #111828;
+  --badge-background: #134e4a;
+}
+
+@theme {
+  --color-primary-background: var(--primary-background);
+  --color-secondary-background: var(--secondary-background);
+  --color-menu-background: var(--menu-background);
+  --color-hover-background: var(--hover-background);
+  --color-primary-text: var(--primary-text);
+  --color-secondary-text: var(--secondary-text);
+  --color-inverted-text: var(--inverted-text);
+  --color-primary-border: var(--primary-border);
+  --color-focus-border: var(--focus-border);
+  --color-success: var(--success-color);
+  --color-error: var(--error-color);
+  --color-warning: var(--warning-color);
+  --color-info: var(--info-color);
+  --color-primary: var(--primary-color);
+  --color-secondary: var(--secondary-color);
+  --color-chart-background: var(--chart-background);
+  --color-chart-grid: var(--chart-grid);
+  --color-chart-line-1: var(--chart-line-1);
+  --color-chart-line-2: var(--chart-line-2);
+  --color-chart-line-3: var(--chart-line-3);
+  --color-button-background: var(--button-background);
+  --color-button-hover: var(--button-hover);
+  --color-card-background: var(--card-background);
+  --color-input-background: var(--input-background);
+  --color-badge-background: var(--badge-background);
+  --shadow-default: 0 1px 3px var(--default-shadow);
 }
 
 input,
@@ -18,11 +101,4 @@ textarea,
 [contenteditable="true"] {
   user-select: text;
   cursor: text;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    color: #f6f6f6;
-    background-color: #2f2f2f;
-  }
 }
