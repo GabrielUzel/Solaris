@@ -1,6 +1,6 @@
 import Card from "../ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../ui/tabs";
-import Transactions from "./transactions";
+import Transactions from "./transactions/transactions";
 import Accounts from "./accounts";
 import Categories from "./categories";
 import Landmark from "../../assets/icons/landmark.svg?react";

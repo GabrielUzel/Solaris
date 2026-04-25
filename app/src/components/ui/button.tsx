@@ -1,8 +1,7 @@
-import { Icon } from "./icon";
+import { ComponentType, SVGProps } from "react";
 
 interface ButtonIconProps {
-  src: string;
-  alt: string;
+  src: ComponentType<SVGProps<SVGSVGElement>>;
   width: number;
   height: number;
 }
@@ -21,6 +20,8 @@ export default function Button({
   iconPosition = "left",
   ...props
 }: ButtonProps) {
+  const Icon = icon?.src;
+
   const baseStyles =
     "px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2";
 
@@ -35,22 +36,12 @@ export default function Button({
 
   return (
     <button className={`${baseStyles} ${variants[variant]}`} {...props}>
-      {icon && iconPosition === "left" && (
-        <Icon
-          src={icon.src}
-          alt={icon.alt}
-          width={icon.width}
-          height={icon.height}
-        />
+      {Icon && iconPosition === "left" && (
+        <Icon width={icon!.width} height={icon!.height} />
       )}
       {children}
-      {icon && iconPosition === "right" && (
-        <Icon
-          src={icon.src}
-          alt={icon.alt}
-          width={icon.width}
-          height={icon.height}
-        />
+      {Icon && iconPosition === "right" && (
+        <Icon width={icon!.width} height={icon!.height} />
       )}
     </button>
   );
