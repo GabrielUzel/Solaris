@@ -40,8 +40,6 @@ defmodule SolarisCore.Infrastructure.Repositories.CategoryRepo do
   end
 
   def list_by_type(type) do
-    import Ecto.Query
-
     CategorySchema
     |> where([c], c.type == ^type)
     |> Repo.all()
@@ -49,7 +47,7 @@ defmodule SolarisCore.Infrastructure.Repositories.CategoryRepo do
   end
 
   def update(%Category{id: id} = domain_category) do
-    with {:ok, schema} <- Repo.get(CategorySchema, id) |> ok_or_error(),
+    with {:ok, schema} <- ok_or_error(Repo.get(CategorySchema, id)),
          attrs <- to_schema_attrs(domain_category),
          changeset <- CategorySchema.changeset(schema, attrs),
          {:ok, updated_schema} <- Repo.update(changeset) do
@@ -58,7 +56,7 @@ defmodule SolarisCore.Infrastructure.Repositories.CategoryRepo do
   end
 
   def delete(id) do
-    with {:ok, schema} <- Repo.get(CategorySchema, id) |> ok_or_error() do
+    with {:ok, schema} <- ok_or_error(Repo.get(CategorySchema, id)) do
       Repo.delete(schema)
     end
   end
@@ -77,7 +75,9 @@ defmodule SolarisCore.Infrastructure.Repositories.CategoryRepo do
         id: schema.id,
         name: schema.name,
         type: schema.type,
-        color: schema.color
+        color: schema.color,
+        created_at: schema.inserted_at,
+        updated_at: schema.updated_at
       })
 
     category

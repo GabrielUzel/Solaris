@@ -4,9 +4,9 @@
   "version": "0.2.0",
   "identifier": "com.solaris.app",
   "build": {
-    "beforeBuildCommand": "./scripts/build.sh && bun run build",
+    "beforeBuildCommand": "bun run build",
+    "beforeDevCommand": "bun run dev",
     "devUrl": "http://localhost:1420",
-    "beforeDevCommand": "./scripts/build.sh && bun run dev",
     "frontendDist": "../dist"
   },
   "app": {

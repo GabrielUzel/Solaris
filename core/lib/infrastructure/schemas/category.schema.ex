@@ -10,8 +10,12 @@ defmodule SolarisCore.Infrastructure.Schemas.CategorySchema do
     field :type, Ecto.Enum, values: [:income, :expense]
     field :color, :string
 
-    has_many :transactions, SolarisCore.Infrastructure.Schemas.TransactionSchema,
+    has_many :planned_transactions, SolarisCore.Infrastructure.Schemas.PlannedTransactionSchema,
       foreign_key: :category_id
+
+    has_many :budget_month_transactions,
+             SolarisCore.Infrastructure.Schemas.BudgetMonthTransactionSchema,
+             foreign_key: :category_id
 
     timestamps()
   end
@@ -19,6 +23,6 @@ defmodule SolarisCore.Infrastructure.Schemas.CategorySchema do
   def changeset(category, attrs) do
     category
     |> cast(attrs, [:name, :type, :color])
-    |> validate_required([:name, :type])
+    |> validate_required([:name, :type, :color])
   end
 end

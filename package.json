@@ -1,0 +1,18 @@
+{
+  "name": "solaris",
+  "private": true,
+  "packageManager": "pnpm@10.0.0",
+  "scripts": {
+    "dev": "concurrently -n core,app -c green,cyan \"pnpm dev:core\" \"pnpm dev:app\"",
+    "dev:core": "cd core && mix phx.server",
+    "dev:app": "cd app && bun run dev",
+    "build": "pnpm build:core && pnpm build:app",
+    "build:core": "cd core && MIX_ENV=prod mix release",
+    "build:app": "cd app && bun run build",
+    "preview": "cd app && bun run preview",
+    "tauri": "cd app && bun run tauri"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

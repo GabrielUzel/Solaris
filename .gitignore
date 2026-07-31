@@ -1,0 +1,45 @@
+# Elixir / Phoenix / Ecto
+core/_build/
+core/cover/
+core/deps/
+core/doc/
+core/.fetch
+core/.elixir_ls/
+core/erl_crash.dump
+core/*.ez
+core/tmp/
+core/*.db
+core/*.db-*
+core/.env
+core/burrito_out/
+core/solaris_core-*.tar
+
+# Node / pnpm / frontend
+app/node_modules/
+app/dist/
+app/dist-ssr/
+app/logs/
+app/*.log
+app/npm-debug.log*
+app/yarn-debug.log*
+app/yarn-error.log*
+app/pnpm-debug.log*
+app/lerna-debug.log*
+app/*.local
+app/.env
+app/solaris_core-*
+
+# Root-level Node / tooling
+node_modules/
+pnpm-lock.yaml
+dist/
+target/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Project files
+AGENTS.md
+.abacusai
