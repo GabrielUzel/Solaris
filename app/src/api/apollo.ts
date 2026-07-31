@@ -2,9 +2,10 @@ import { ApolloClient, InMemoryCache, HttpLink } from "@apollo/client";
 
 const getApiUrl = () => {
   if (import.meta.env.DEV) {
-    return import.meta.env.VITE_API_URL;
+    return "/graphql";
   }
-  return "http://localhost:4000/api/graphql";
+
+  return "http://127.0.0.1:4000/api/graphql";
 };
 
 const client = new ApolloClient({

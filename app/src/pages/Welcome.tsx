@@ -1,4 +1,5 @@
 import { Route } from "../hooks/useRouter";
+import Button from "../components/Button";
 
 type Props = {
   navigate: (route: Route) => void;
@@ -6,21 +7,16 @@ type Props = {
 
 export default function Welcome({ navigate }: Props) {
   return (
-    <div className="flex flex-col items-center justify-center h-screen w-screen bg-primary-background text-primary-text">
-      <div className="flex flex-col items-center gap-6 max-w-sm text-center">
-        <img src="/icons/logo.svg" alt="Solaris" className="w-16 h-16" />
+    <div className="flex min-h-screen w-full items-center justify-center bg-primary-background text-primary-text">
+      <div className="flex max-w-sm flex-col items-center gap-6 text-center">
+        <img src="/icons/logo.svg" alt="Solaris" className="h-16 w-16" />
         <div className="flex flex-col gap-2">
           <h1 className="text-3xl font-bold text-primary-text">Solaris</h1>
-          <p className="text-secondary-text text-sm">
+          <p className="text-sm text-secondary-text">
             Controle financeiro pessoal simples e direto.
           </p>
         </div>
-        <button
-          onClick={() => navigate("dashboard")}
-          className="mt-2 px-6 py-3 rounded-xl text-sm font-semibold text-inverted-text bg-button-background hover:bg-button-hover transition-colors"
-        >
-          Começar
-        </button>
+        <Button onClick={() => navigate("dashboard")}>Começar</Button>
       </div>
     </div>
   );

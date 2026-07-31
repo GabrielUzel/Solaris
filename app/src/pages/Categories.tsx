@@ -1,49 +1,96 @@
 import { useState } from "react";
-
-type Category = {
-  id: string;
-  name: string;
-  type: "income" | "expense";
-  color: string;
-};
-
-const MOCK_CATEGORIES: Category[] = [];
+import Button from "../components/Button";
+import Spinner from "../components/Spinner";
+import Plus from "../assets/icons/plus.svg?react";
+import Edit from "../assets/icons/edit.svg?react";
+import Trash from "../assets/icons/trash.svg?react";
+import CategoryDrawer from "../components/category/CategoryDrawer";
+import DeleteCategoryModal from "../components/category/DeleteCategoryModal";
+import { useCategories, type CategoryItem } from "../api/categories";
 
 export default function Categories() {
-  const [categories] = useState<Category[]>(MOCK_CATEGORIES);
+  const { data, loading, error } = useCategories();
   const [showForm, setShowForm] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<CategoryItem | null>(
+    null,
+  );
+  const [deletingCategory, setDeletingCategory] = useState<CategoryItem | null>(
+    null,
+  );
+
+  const categories = data?.listCategories ?? [];
+
+  function handleOpenCreate() {
+    setEditingCategory(null);
+    setShowForm(true);
+  }
+
+  function handleEdit(category: CategoryItem) {
+    setDeletingCategory(null);
+    setEditingCategory(category);
+    setShowForm(true);
+  }
+
+  function handleDelete(category: CategoryItem) {
+    setShowForm(false);
+    setEditingCategory(null);
+    setDeletingCategory(category);
+  }
+
+  function handleCloseDrawer() {
+    setShowForm(false);
+    setEditingCategory(null);
+  }
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-primary-text">Categorias</h1>
-          <p className="text-sm text-secondary-text mt-1">
+          <h1 className="text-xl font-semibold text-primary-text">
+            Categorias
+          </h1>
+          <p className="mt-1 text-sm text-secondary-text">
             Gerencie as categorias de receitas e despesas
           </p>
         </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-inverted-text bg-button-background hover:bg-button-hover transition-colors"
-        >
-          <img src="/icons/plus.svg" alt="" className="w-4 h-4" />
+
+        <Button onClick={handleOpenCreate}>
+          <Plus className="h-4 w-4" aria-hidden="true" />
           Nova categoria
-        </button>
+        </Button>
       </div>
 
-      {showForm && (
-        <CategoryForm onCancel={() => setShowForm(false)} />
-      )}
+      <CategoryDrawer
+        open={showForm}
+        onClose={handleCloseDrawer}
+        category={editingCategory}
+      />
 
-      {categories.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-secondary-text text-sm gap-2">
-          <img src="/icons/category.svg" alt="" className="w-10 h-10 opacity-30" />
+      <DeleteCategoryModal
+        open={deletingCategory !== null}
+        category={deletingCategory}
+        onClose={() => setDeletingCategory(null)}
+      />
+
+      {loading ? (
+        <Spinner />
+      ) : error ? (
+        <div className="flex flex-col items-center justify-center gap-2 py-16 text-sm text-error">
+          <p>Erro ao carregar categorias.</p>
+        </div>
+      ) : categories.length === 0 ? (
+        <div className="flex flex-col items-center justify-center gap-2 py-16 text-sm text-secondary-text">
           <p>Nenhuma categoria cadastrada ainda.</p>
         </div>
       ) : (
         <div className="flex flex-col gap-2">
           {categories.map((cat) => (
-            <CategoryRow key={cat.id} category={cat} />
+            <CategoryRow
+              key={cat.id}
+              category={cat}
+              onEdit={() => handleEdit(cat)}
+              onDelete={() => handleDelete(cat)}
+            />
           ))}
         </div>
       )}
@@ -51,70 +98,44 @@ export default function Categories() {
   );
 }
 
-function CategoryForm({ onCancel }: { onCancel: () => void }) {
+function CategoryRow({
+  category,
+  onEdit,
+  onDelete,
+}: {
+  category: CategoryItem;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
   return (
-    <div className="flex flex-col gap-4 bg-card-background rounded-xl p-5 border border-primary-border shadow-default">
-      <h2 className="text-sm font-semibold text-primary-text">Nova categoria</h2>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-secondary-text">Nome</label>
-          <input
-            type="text"
-            placeholder="Ex: Alimentação"
-            className="px-3 py-2 rounded-lg text-sm bg-input-background border border-primary-border text-primary-text focus:outline-none focus:border-focus-border"
-          />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-secondary-text">Tipo</label>
-          <select className="px-3 py-2 rounded-lg text-sm bg-input-background border border-primary-border text-primary-text focus:outline-none focus:border-focus-border">
-            <option value="expense">Despesa</option>
-            <option value="income">Receita</option>
-          </select>
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-secondary-text">Cor</label>
-          <input
-            type="color"
-            defaultValue="#14b8a6"
-            className="h-10 w-full rounded-lg border border-primary-border bg-input-background cursor-pointer"
-          />
-        </div>
-      </div>
-      <div className="flex gap-2">
-        <button className="px-4 py-2 rounded-lg text-sm font-medium text-inverted-text bg-button-background hover:bg-button-hover transition-colors">
-          Salvar
-        </button>
-        <button
-          onClick={onCancel}
-          className="px-4 py-2 rounded-lg text-sm font-medium text-secondary-text bg-input-background hover:bg-hover-background transition-colors"
-        >
-          Cancelar
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function CategoryRow({ category }: { category: Category }) {
-  return (
-    <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-card-background border border-primary-border shadow-default">
+    <div className="flex items-center justify-between rounded-xl border border-primary-border bg-card-background px-4 py-3 shadow-default">
       <div className="flex items-center gap-3">
         <span
-          className="w-3 h-3 rounded-full"
+          className="h-3 w-3 rounded-full"
           style={{ backgroundColor: category.color }}
         />
         <span className="text-sm text-primary-text">{category.name}</span>
-        <span className="text-xs text-secondary-text px-2 py-0.5 rounded-full bg-secondary-background">
-          {category.type === "income" ? "Receita" : "Despesa"}
+        <span className="rounded-full bg-secondary-background px-2 py-0.5 text-xs text-secondary-text">
+          {category.type === "INCOME" ? "Receita" : "Despesa"}
         </span>
       </div>
       <div className="flex gap-2">
-        <button className="p-1.5 rounded-lg text-secondary-text hover:bg-hover-background transition-colors">
-          <img src="/icons/edit.svg" alt="Editar" className="w-4 h-4" />
-        </button>
-        <button className="p-1.5 rounded-lg text-error hover:bg-hover-background transition-colors">
-          <img src="/icons/trash.svg" alt="Excluir" className="w-4 h-4" />
-        </button>
+        <Button
+          variant="ghost"
+          className="p-1.5"
+          aria-label="Editar categoria"
+          onClick={onEdit}
+        >
+          <Edit className="h-4 w-4" aria-hidden="true" />
+        </Button>
+        <Button
+          variant="ghost"
+          className="p-1.5 text-error"
+          aria-label="Excluir categoria"
+          onClick={onDelete}
+        >
+          <Trash className="h-4 w-4" aria-hidden="true" />
+        </Button>
       </div>
     </div>
   );

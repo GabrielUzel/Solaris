@@ -1,19 +1,21 @@
 import { useTheme } from "../hooks/useTheme";
+import Button from "./Button";
+import Sun from "../assets/icons/sun.svg?react";
+import Moon from "../assets/icons/moon.svg?react";
 
 export default function ThemeToggle() {
   const { theme, toggle } = useTheme();
 
+  const Icon = theme === "dark" ? Sun : Moon;
+
   return (
-    <button
+    <Button
+      variant="ghost"
       onClick={toggle}
-      className="flex items-center justify-center w-8 h-8 rounded-lg text-secondary-text hover:bg-hover-background hover:text-primary-text transition-colors"
+      className="h-8 w-8 p-0 text-secondary-text hover:text-primary-text"
       aria-label="Alternar tema"
     >
-      <img
-        src={theme === "dark" ? "/icons/sun.svg" : "/icons/moon.svg"}
-        alt={theme === "dark" ? "Tema claro" : "Tema escuro"}
-        className="w-5 h-5"
-      />
-    </button>
+      <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
+    </Button>
   );
 }

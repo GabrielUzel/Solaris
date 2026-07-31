@@ -19,7 +19,7 @@ function App() {
     dashboard: <Dashboard />,
     categories: <Categories />,
     cards: <Cards />,
-  };
+  } as const;
 
   return (
     <MainLayout current={route} navigate={navigate}>
