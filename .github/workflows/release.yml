@@ -1,0 +1,266 @@
+name: Build Solaris Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  APP_DIR: app
+  CORE_DIR: core
+  SIDECAR_NAME: solaris_core
+
+jobs:
+  build-backend:
+    name: Build backend with Burrito
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install backend build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            7zip \
+            p7zip-full \
+            xz-utils
+
+      - name: Setup Zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.15.1
+
+      - name: Setup Erlang and Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: "27.2"
+          elixir-version: "1.17.3"
+          version-type: strict
+          install-hex: true
+          install-rebar: true
+
+      - name: Restore Mix dependencies
+        working-directory: ${{ env.CORE_DIR }}
+        run: |
+          mix deps.get
+
+      - name: Build Burrito releases
+        working-directory: ${{ env.CORE_DIR }}
+        env:
+          MIX_ENV: prod
+        run: |
+          mix release
+
+      - name: Locate and prepare Burrito binaries
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p sidecars
+
+          echo "Generated files:"
+          find "${CORE_DIR}" \
+            -type f \
+            \( -iname "*linux*" -o -iname "*windows*" -o -iname "*.exe" \) \
+            -print
+
+          linux_binary="$(
+            find "${CORE_DIR}" \
+              -type f \
+              \( -iname "*linux*" -o -iname "*linux*x86_64*" \) \
+              -not -path "*/deps/*" \
+              -not -path "*/_build/*/lib/*" \
+              | head -n 1
+          )"
+
+          windows_binary="$(
+            find "${CORE_DIR}" \
+              -type f \
+              \( -iname "*windows*" -o -iname "*win64*" -o -iname "*.exe" \) \
+              -not -path "*/deps/*" \
+              -not -path "*/_build/*/lib/*" \
+              | head -n 1
+          )"
+
+          if [ -z "${linux_binary}" ]; then
+            echo "Linux Burrito binary was not found."
+            exit 1
+          fi
+
+          if [ -z "${windows_binary}" ]; then
+            echo "Windows Burrito binary was not found."
+            exit 1
+          fi
+
+          echo "Linux binary: ${linux_binary}"
+          echo "Windows binary: ${windows_binary}"
+
+          cp "${linux_binary}" \
+            "sidecars/${SIDECAR_NAME}-x86_64-unknown-linux-gnu"
+
+          cp "${windows_binary}" \
+            "sidecars/${SIDECAR_NAME}-x86_64-pc-windows-msvc.exe"
+
+          chmod +x \
+            "sidecars/${SIDECAR_NAME}-x86_64-unknown-linux-gnu"
+
+          file sidecars/*
+
+      - name: Upload backend sidecars
+        uses: actions/upload-artifact@v4
+        with:
+          name: solaris-backend-sidecars
+          path: sidecars/
+          if-no-files-found: error
+          retention-days: 1
+
+  build-linux:
+    name: Build Linux AppImage
+    needs: build-backend
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download backend sidecars
+        uses: actions/download-artifact@v4
+        with:
+          name: solaris-backend-sidecars
+          path: ${{ env.APP_DIR }}/src-tauri
+
+      - name: Install Tauri Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            libssl-dev \
+            libayatana-appindicator3-dev
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Restore frontend dependencies
+        working-directory: ${{ env.APP_DIR }}
+        run: bun install --frozen-lockfile
+
+      - name: Restore Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            ${{ env.APP_DIR }}/src-tauri -> target
+
+      - name: Build AppImage
+        uses: tauri-apps/tauri-action@v0
+        with:
+          projectPath: ${{ env.APP_DIR }}
+          args: --bundles appimage
+
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: solaris-linux-appimage
+          path: |
+            ${{ env.APP_DIR }}/src-tauri/target/release/bundle/appimage/*.AppImage
+          if-no-files-found: error
+          retention-days: 1
+
+  build-windows:
+    name: Build Windows installer
+    needs: build-backend
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download backend sidecars
+        uses: actions/download-artifact@v4
+        with:
+          name: solaris-backend-sidecars
+          path: ${{ env.APP_DIR }}/src-tauri
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Restore frontend dependencies
+        working-directory: ${{ env.APP_DIR }}
+        run: bun install --frozen-lockfile
+
+      - name: Restore Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            ${{ env.APP_DIR }}/src-tauri -> target
+
+      - name: Build Windows installer
+        uses: tauri-apps/tauri-action@v0
+        with:
+          projectPath: ${{ env.APP_DIR }}
+          args: --bundles nsis
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: solaris-windows-installer
+          path: |
+            ${{ env.APP_DIR }}/src-tauri/target/release/bundle/nsis/*-setup.exe
+          if-no-files-found: error
+          retention-days: 1
+
+  publish-release:
+    name: Publish GitHub Release
+    needs:
+      - build-linux
+      - build-windows
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: solaris-linux-appimage
+          path: release-assets
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: solaris-windows-installer
+          path: release-assets
+
+      - name: List release assets
+        run: |
+          find release-assets -type f -maxdepth 2 -print
+
+      - name: Create or update GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          if gh release view "${TAG_NAME}" >/dev/null 2>&1; then
+            gh release upload \
+              "${TAG_NAME}" \
+              release-assets/* \
+              --clobber
+          else
+            gh release create \
+              "${TAG_NAME}" \
+              release-assets/* \
+              --title "Solaris ${TAG_NAME}" \
+              --generate-notes
+          fi
