@@ -4,7 +4,7 @@ defmodule SolarisCore.MixProject do
   def project do
     [
       app: :solaris_core,
-      version: "0.5.0",
+      version: "0.5.1",
       elixir: "~> 1.17",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
