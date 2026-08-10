@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "v*.*.*"
+
   workflow_dispatch:
 
 permissions:
@@ -19,19 +20,29 @@ jobs:
     name: Build backend with Burrito
     runs-on: ubuntu-22.04
 
+    env:
+      HEX_CACERTS_PATH: /etc/ssl/certs/ca-certificates.crt
+      SSL_CERT_FILE: /etc/ssl/certs/ca-certificates.crt
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install backend build dependencies
+      - name: Update system certificates
         run: |
           sudo apt-get update
+
           sudo apt-get install -y \
-            7zip \
+            ca-certificates \
+            openssl \
             p7zip-full \
             xz-utils
 
-      - name: Setup Zig
+          sudo update-ca-certificates
+
+          test -f "${HEX_CACERTS_PATH}"
+
+      - name: Install Zig
         uses: mlugg/setup-zig@v2
         with:
           version: 0.15.1
@@ -39,11 +50,17 @@ jobs:
       - name: Setup Erlang and Elixir
         uses: erlef/setup-beam@v1
         with:
-          otp-version: "27.2"
+          otp-version: "27.3"
           elixir-version: "1.17.3"
           version-type: strict
           install-hex: true
           install-rebar: true
+
+      - name: Verify Hex TLS configuration
+        run: |
+          echo "HEX_CACERTS_PATH=${HEX_CACERTS_PATH}"
+          echo "SSL_CERT_FILE=${SSL_CERT_FILE}"
+          mix hex.info
 
       - name: Restore Mix dependencies
         working-directory: ${{ env.CORE_DIR }}
@@ -64,10 +81,11 @@ jobs:
 
           mkdir -p sidecars
 
-          echo "Generated files:"
+          echo "Generated Burrito files:"
           find "${CORE_DIR}" \
             -type f \
             \( -iname "*linux*" -o -iname "*windows*" -o -iname "*.exe" \) \
+            -not -path "*/deps/*" \
             -print
 
           linux_binary="$(
@@ -98,8 +116,11 @@ jobs:
             exit 1
           fi
 
-          echo "Linux binary: ${linux_binary}"
-          echo "Windows binary: ${windows_binary}"
+          echo "Linux Burrito binary:"
+          echo "${linux_binary}"
+
+          echo "Windows Burrito binary:"
+          echo "${windows_binary}"
 
           cp "${linux_binary}" \
             "sidecars/${SIDECAR_NAME}-x86_64-unknown-linux-gnu"
@@ -109,6 +130,9 @@ jobs:
 
           chmod +x \
             "sidecars/${SIDECAR_NAME}-x86_64-unknown-linux-gnu"
+
+          echo "Prepared sidecars:"
+          ls -lah sidecars
 
           file sidecars/*
 
@@ -135,16 +159,30 @@ jobs:
           name: solaris-backend-sidecars
           path: ${{ env.APP_DIR }}/src-tauri
 
+      - name: Verify Linux sidecar
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          sidecar="${APP_DIR}/src-tauri/${SIDECAR_NAME}-x86_64-unknown-linux-gnu"
+
+          test -f "${sidecar}"
+          test -x "${sidecar}"
+
+          ls -lah "${sidecar}"
+          file "${sidecar}"
+
       - name: Install Tauri Linux dependencies
         run: |
           sudo apt-get update
+
           sudo apt-get install -y \
             libwebkit2gtk-4.1-dev \
             libappindicator3-dev \
+            libayatana-appindicator3-dev \
             librsvg2-dev \
             patchelf \
-            libssl-dev \
-            libayatana-appindicator3-dev
+            libssl-dev
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -153,7 +191,8 @@ jobs:
 
       - name: Restore frontend dependencies
         working-directory: ${{ env.APP_DIR }}
-        run: bun install --frozen-lockfile
+        run: |
+          bun install --frozen-lockfile
 
       - name: Restore Rust cache
         uses: swatinem/rust-cache@v2
@@ -166,6 +205,17 @@ jobs:
         with:
           projectPath: ${{ env.APP_DIR }}
           args: --bundles appimage
+
+      - name: Verify AppImage
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          find "${APP_DIR}/src-tauri/target/release/bundle/appimage" \
+            -maxdepth 1 \
+            -type f \
+            -name "*.AppImage" \
+            -print
 
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
@@ -191,6 +241,17 @@ jobs:
           name: solaris-backend-sidecars
           path: ${{ env.APP_DIR }}/src-tauri
 
+      - name: Verify Windows sidecar
+        shell: pwsh
+        run: |
+          $sidecar = "${env:APP_DIR}/src-tauri/${env:SIDECAR_NAME}-x86_64-pc-windows-msvc.exe"
+
+          if (-not (Test-Path $sidecar)) {
+            Write-Error "Windows sidecar was not found: $sidecar"
+          }
+
+          Get-Item $sidecar
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
@@ -198,7 +259,8 @@ jobs:
 
       - name: Restore frontend dependencies
         working-directory: ${{ env.APP_DIR }}
-        run: bun install --frozen-lockfile
+        run: |
+          bun install --frozen-lockfile
 
       - name: Restore Rust cache
         uses: swatinem/rust-cache@v2
@@ -211,6 +273,22 @@ jobs:
         with:
           projectPath: ${{ env.APP_DIR }}
           args: --bundles nsis
+
+      - name: Verify Windows installer
+        shell: pwsh
+        run: |
+          $installerPath = "${env:APP_DIR}/src-tauri/target/release/bundle/nsis"
+
+          $installers = Get-ChildItem `
+            -Path $installerPath `
+            -Filter "*-setup.exe" `
+            -File
+
+          if ($installers.Count -eq 0) {
+            Write-Error "Windows installer was not found."
+          }
+
+          $installers | Format-Table FullName, Length
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
@@ -243,7 +321,10 @@ jobs:
 
       - name: List release assets
         run: |
-          find release-assets -type f -maxdepth 2 -print
+          find release-assets \
+            -maxdepth 2 \
+            -type f \
+            -print
 
       - name: Create or update GitHub Release
         env:
@@ -253,11 +334,15 @@ jobs:
           set -euo pipefail
 
           if gh release view "${TAG_NAME}" >/dev/null 2>&1; then
+            echo "Release ${TAG_NAME} already exists. Uploading assets..."
+
             gh release upload \
               "${TAG_NAME}" \
               release-assets/* \
               --clobber
           else
+            echo "Creating release ${TAG_NAME}..."
+
             gh release create \
               "${TAG_NAME}" \
               release-assets/* \
