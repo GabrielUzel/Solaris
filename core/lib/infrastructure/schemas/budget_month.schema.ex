@@ -6,15 +6,16 @@ defmodule SolarisCore.Infrastructure.Schemas.BudgetMonthSchema do
   @foreign_key_type :binary_id
 
   schema "budget_months" do
-    field :reference_year, :integer
-    field :reference_month, :integer
-    field :starts_on, :date
-    field :ends_on, :date
-    field :initialized_at, :utc_datetime
+    field(:reference_year, :integer)
+    field(:reference_month, :integer)
+    field(:starts_on, :date)
+    field(:ends_on, :date)
+    field(:initialized_at, :utc_datetime)
 
-    has_many :transactions, SolarisCore.Infrastructure.Schemas.BudgetMonthTransactionSchema,
+    has_many(:transactions, SolarisCore.Infrastructure.Schemas.TransactionSchema,
       foreign_key: :budget_month_id,
       on_delete: :delete_all
+    )
 
     timestamps()
   end

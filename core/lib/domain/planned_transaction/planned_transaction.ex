@@ -1,8 +1,17 @@
 defmodule SolarisCore.Finance.Domain.PlannedTransaction do
   alias SolarisCore.Finance.Domain.PaymentMethod
-  alias SolarisCore.Finance.Domain.CategoryCompatibilityPolicy
 
-  @enforce_keys [:id, :description, :amount, :type, :category_id, :payment_method, :day_of_month, :starts_on, :active]
+  @enforce_keys [
+    :id,
+    :description,
+    :amount,
+    :type,
+    :category_id,
+    :payment_method,
+    :day_of_month,
+    :starts_on,
+    :active
+  ]
   defstruct [
     :id,
     :description,
@@ -25,9 +34,8 @@ defmodule SolarisCore.Finance.Domain.PlannedTransaction do
          :ok <- validate_amount(attrs[:amount]),
          :ok <- PaymentMethod.validate(attrs[:payment_method]),
          :ok <- validate_day_of_month(attrs[:day_of_month]),
-         :ok <- validate_starts_on(attrs[:starts_on]),
-         :ok <- validate_category_compatibility(attrs[:category], attrs[:type]) do
-      {:ok, struct!(__MODULE__, Map.delete(attrs, :category))}
+         :ok <- validate_starts_on(attrs[:starts_on]) do
+      {:ok, struct!(__MODULE__, attrs)}
     end
   end
 
@@ -52,7 +60,4 @@ defmodule SolarisCore.Finance.Domain.PlannedTransaction do
 
   defp validate_starts_on(%Date{}), do: :ok
   defp validate_starts_on(_), do: {:error, :starts_on_required}
-
-  defp validate_category_compatibility(nil, _type), do: :ok
-  defp validate_category_compatibility(category, type), do: CategoryCompatibilityPolicy.validate_compatibility(category, type)
 end

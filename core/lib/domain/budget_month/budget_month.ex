@@ -17,8 +17,18 @@ defmodule SolarisCore.Finance.Domain.BudgetMonth do
          :ok <- validate_reference_month(attrs[:reference_month]),
          :ok <- validate_starts_on(attrs[:starts_on]),
          :ok <- validate_ends_on(attrs[:ends_on]),
-         :ok <- validate_starts_on_belongs_to_month(attrs[:starts_on], attrs[:reference_year], attrs[:reference_month]),
-         :ok <- validate_ends_on_belongs_to_month(attrs[:ends_on], attrs[:reference_year], attrs[:reference_month]),
+         :ok <-
+           validate_starts_on_belongs_to_month(
+             attrs[:starts_on],
+             attrs[:reference_year],
+             attrs[:reference_month]
+           ),
+         :ok <-
+           validate_ends_on_belongs_to_month(
+             attrs[:ends_on],
+             attrs[:reference_year],
+             attrs[:reference_month]
+           ),
          :ok <- validate_date_order(attrs[:starts_on], attrs[:ends_on]) do
       {:ok, struct!(__MODULE__, attrs)}
     end
@@ -35,15 +45,20 @@ defmodule SolarisCore.Finance.Domain.BudgetMonth do
     end
   end
 
-  def confirm_transaction(%__MODULE__{} = budget_month, transaction_id) do
-    update_transaction_status(budget_month, transaction_id, :confirmed)
+  def pay_transaction(%__MODULE__{} = budget_month, transaction_id, actual_amount \\ nil) do
+    update_transaction(budget_month, transaction_id, fn transaction ->
+      Transaction.pay(transaction, actual_amount)
+    end)
   end
 
   def skip_transaction(%__MODULE__{} = budget_month, transaction_id) do
-    update_transaction_status(budget_month, transaction_id, :skipped)
+    update_transaction(budget_month, transaction_id, &Transaction.skip/1)
   end
 
-  def remove_manual_transaction(%__MODULE__{transactions: transactions} = budget_month, transaction_id) do
+  def remove_manual_transaction(
+        %__MODULE__{transactions: transactions} = budget_month,
+        transaction_id
+      ) do
     case Enum.find(transactions, &(&1.id == transaction_id)) do
       nil ->
         {:error, :transaction_not_found}
@@ -52,7 +67,11 @@ defmodule SolarisCore.Finance.Domain.BudgetMonth do
         {:error, :cannot_remove_planned_transaction}
 
       %Transaction{origin: :manual} ->
-        updated = %{budget_month | transactions: Enum.reject(transactions, &(&1.id == transaction_id))}
+        updated = %{
+          budget_month
+          | transactions: Enum.reject(transactions, &(&1.id == transaction_id))
+        }
+
         {:ok, updated}
     end
   end
@@ -62,19 +81,45 @@ defmodule SolarisCore.Finance.Domain.BudgetMonth do
 
   def unique_year_month?(_, _, _), do: false
 
-  defp update_transaction_status(%__MODULE__{transactions: transactions} = budget_month, transaction_id, new_status) do
+  def pending_expenses(%__MODULE__{transactions: transactions}) do
+    Enum.filter(transactions, fn
+      %Transaction{type: :expense, status: :paid} -> false
+      %Transaction{type: :expense} -> true
+      _ -> false
+    end)
+  end
+
+  def closed?(%__MODULE__{} = budget_month) do
+    pending_expenses(budget_month) == []
+  end
+
+  defp update_transaction(
+         %__MODULE__{transactions: transactions} = budget_month,
+         transaction_id,
+         updater
+       ) do
     case Enum.find_index(transactions, &(&1.id == transaction_id)) do
       nil ->
         {:error, :transaction_not_found}
 
       index ->
-        updated_transactions = List.update_at(transactions, index, &%{&1 | status: new_status})
-        {:ok, %{budget_month | transactions: updated_transactions}}
+        transaction = Enum.at(transactions, index)
+
+        case updater.(transaction) do
+          {:ok, updated_transaction} ->
+            updated_transactions = List.replace_at(transactions, index, updated_transaction)
+            {:ok, %{budget_month | transactions: updated_transactions}}
+
+          error ->
+            error
+        end
     end
   end
 
-  defp check_duplicate_planned_transaction(_budget_month, %Transaction{planned_transaction_id: nil}),
-    do: :ok
+  defp check_duplicate_planned_transaction(_budget_month, %Transaction{
+         planned_transaction_id: nil
+       }),
+       do: :ok
 
   defp check_duplicate_planned_transaction(%__MODULE__{transactions: transactions}, %Transaction{
          planned_transaction_id: planned_id

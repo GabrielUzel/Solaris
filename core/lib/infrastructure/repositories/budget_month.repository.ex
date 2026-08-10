@@ -1,14 +1,17 @@
 defmodule SolarisCore.Infrastructure.Repositories.BudgetMonthRepo do
   alias SolarisCore.Repo
   alias SolarisCore.Infrastructure.Schemas.BudgetMonthSchema
-  alias SolarisCore.Infrastructure.Schemas.BudgetMonthTransactionSchema
+  alias SolarisCore.Infrastructure.Schemas.TransactionSchema
   alias SolarisCore.Finance.Domain.BudgetMonth
   alias SolarisCore.Finance.Domain.BudgetMonth.Transaction
   import Ecto.Query
 
   def create(%BudgetMonth{} = domain) do
     Ecto.Multi.new()
-    |> Ecto.Multi.insert(:budget_month, BudgetMonthSchema.changeset(%BudgetMonthSchema{}, to_schema_attrs(domain)))
+    |> Ecto.Multi.insert(
+      :budget_month,
+      BudgetMonthSchema.changeset(%BudgetMonthSchema{}, to_schema_attrs(domain))
+    )
     |> insert_transactions(domain.id, domain.transactions)
     |> Repo.transaction()
     |> case do
@@ -42,7 +45,10 @@ defmodule SolarisCore.Infrastructure.Repositories.BudgetMonthRepo do
   def update(%BudgetMonth{id: id} = domain) do
     with {:ok, schema} <- ok_or_error(Repo.get(BudgetMonthSchema, id)) do
       Ecto.Multi.new()
-      |> Ecto.Multi.update(:budget_month, BudgetMonthSchema.changeset(schema, to_schema_attrs(domain)))
+      |> Ecto.Multi.update(
+        :budget_month,
+        BudgetMonthSchema.changeset(schema, to_schema_attrs(domain))
+      )
       |> sync_transactions(domain.id, domain.transactions)
       |> Repo.transaction()
       |> case do
@@ -59,7 +65,10 @@ defmodule SolarisCore.Infrastructure.Repositories.BudgetMonthRepo do
       Ecto.Multi.insert(
         acc,
         {:transaction, tx.id},
-        BudgetMonthTransactionSchema.changeset(%BudgetMonthTransactionSchema{}, to_transaction_attrs(tx, budget_month_id))
+        TransactionSchema.changeset(
+          %TransactionSchema{},
+          to_transaction_attrs(tx, budget_month_id)
+        )
       )
     end)
   end
@@ -70,8 +79,9 @@ defmodule SolarisCore.Infrastructure.Repositories.BudgetMonthRepo do
     multi
     |> Ecto.Multi.delete_all(
       :delete_removed_transactions,
-      from(t in BudgetMonthTransactionSchema,
-        where: t.budget_month_id == ^budget_month_id and t.id not in ^existing_ids)
+      from(t in TransactionSchema,
+        where: t.budget_month_id == ^budget_month_id and t.id not in ^existing_ids
+      )
     )
     |> upsert_transactions(budget_month_id, transactions)
   end
@@ -83,8 +93,25 @@ defmodule SolarisCore.Infrastructure.Repositories.BudgetMonthRepo do
       Ecto.Multi.insert(
         acc,
         {:upsert_transaction, tx.id},
-        BudgetMonthTransactionSchema.changeset(%BudgetMonthTransactionSchema{}, to_transaction_attrs(tx, budget_month_id)),
-        on_conflict: {:replace, [:description, :amount, :type, :category_id, :payment_method, :occurred_on, :origin, :status, :notes, :updated_at]},
+        TransactionSchema.changeset(
+          %TransactionSchema{},
+          to_transaction_attrs(tx, budget_month_id)
+        ),
+        on_conflict:
+          {:replace,
+           [
+             :description,
+             :expected_amount,
+             :actual_amount,
+             :type,
+             :category_id,
+             :payment_method,
+             :occurred_on,
+             :origin,
+             :status,
+             :notes,
+             :updated_at
+           ]},
         conflict_target: :id
       )
     end)
@@ -107,7 +134,8 @@ defmodule SolarisCore.Infrastructure.Repositories.BudgetMonthRepo do
       budget_month_id: budget_month_id,
       planned_transaction_id: tx.planned_transaction_id,
       description: tx.description,
-      amount: tx.amount,
+      expected_amount: tx.expected_amount,
+      actual_amount: tx.actual_amount,
       type: tx.type,
       category_id: tx.category_id,
       payment_method: tx.payment_method,
@@ -134,13 +162,14 @@ defmodule SolarisCore.Infrastructure.Repositories.BudgetMonthRepo do
     %{budget_month | transactions: transactions}
   end
 
-  defp to_transaction_domain(%BudgetMonthTransactionSchema{} = schema) do
+  defp to_transaction_domain(%TransactionSchema{} = schema) do
     {:ok, transaction} =
       Transaction.new(%{
         id: schema.id,
         planned_transaction_id: schema.planned_transaction_id,
         description: schema.description,
-        amount: schema.amount,
+        expected_amount: schema.expected_amount,
+        actual_amount: schema.actual_amount,
         type: schema.type,
         category_id: schema.category_id,
         payment_method: schema.payment_method,

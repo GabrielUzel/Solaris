@@ -6,16 +6,19 @@ defmodule SolarisCore.Infrastructure.Schemas.CategorySchema do
   @foreign_key_type :binary_id
 
   schema "categories" do
-    field :name, :string
-    field :type, Ecto.Enum, values: [:income, :expense]
-    field :color, :string
+    field(:name, :string)
+    field(:type, Ecto.Enum, values: [:income, :expense])
+    field(:color, :string)
 
-    has_many :planned_transactions, SolarisCore.Infrastructure.Schemas.PlannedTransactionSchema,
+    has_many(:planned_transactions, SolarisCore.Infrastructure.Schemas.PlannedTransactionSchema,
       foreign_key: :category_id
+    )
 
-    has_many :budget_month_transactions,
-             SolarisCore.Infrastructure.Schemas.BudgetMonthTransactionSchema,
-             foreign_key: :category_id
+    has_many(
+      :budget_month_transactions,
+      SolarisCore.Infrastructure.Schemas.TransactionSchema,
+      foreign_key: :category_id
+    )
 
     timestamps()
   end

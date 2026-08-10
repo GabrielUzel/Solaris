@@ -10,4 +10,6 @@ defmodule SolarisCore.Finance.Domain.CategoryCompatibilityPolicy do
       {:error, :category_type_mismatch}
     end
   end
+
+  def validate_compatibility(nil, _item_type), do: :ok
 end

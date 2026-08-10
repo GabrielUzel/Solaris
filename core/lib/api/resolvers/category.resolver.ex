@@ -7,11 +7,11 @@ defmodule SolarisCoreWeb.Api.Resolvers.CategoryResolver do
   alias SolarisCore.Application.Queries.GetCategoryById
 
   def list_categories(_parent, _args, _resolution) do
-    {:ok, ListCategories.execute()}
+    ListCategories.execute()
   end
 
   def list_categories_by_type(_parent, %{type: type}, _resolution) do
-    {:ok, ListCategoriesByType.execute(type)}
+    ListCategoriesByType.execute(type)
   end
 
   def get_category_by_id(_parent, %{id: id}, _resolution) do

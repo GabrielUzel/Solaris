@@ -1,8 +1,14 @@
 defmodule SolarisCore.Application.Queries.ListCategories do
-  alias SolarisCore.Infrastructure.Repositories.CategoryRepo
+  import Ecto.Query
 
-  @spec execute() :: [term()]
+  alias SolarisCore.Repo
+  alias SolarisCore.Infrastructure.Schemas.CategorySchema
+
+  @spec execute() :: {:ok, [map()]}
   def execute do
-    CategoryRepo.list_all()
+    categories =
+      Repo.all(from(c in CategorySchema, order_by: [asc: c.name]))
+
+    {:ok, categories}
   end
 end

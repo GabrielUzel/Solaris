@@ -11,20 +11,21 @@ type Props = {
   options: Option[];
   onChange: (value: string) => void;
   className?: string;
+  placeholder?: string;
 };
 
 export default function Dropdown({
-  label,
   value,
   options,
   onChange,
   className = "",
+  placeholder = "Selecione",
 }: Props) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
   const selected = useMemo(
-    () => options.find((option) => option.value === value) ?? options[0],
+    () => options.find((option) => option.value === value) ?? null,
     [options, value],
   );
 
@@ -62,7 +63,11 @@ export default function Dropdown({
         onClick={() => setOpen((prev) => !prev)}
         className="flex w-full items-center justify-between rounded-lg border border-primary-border bg-input-background px-3 py-2 text-sm text-primary-text focus:border-focus-border focus:outline-none"
       >
-        <span>{selected?.label ?? label}</span>
+        <span
+          className={selected ? "text-primary-text" : "text-secondary-text"}
+        >
+          {selected?.label ?? placeholder}
+        </span>
 
         <svg
           className={`h-4 w-4 text-secondary-text transition-transform duration-200 ${

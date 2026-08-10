@@ -6,10 +6,11 @@ import Edit from "../assets/icons/edit.svg?react";
 import Trash from "../assets/icons/trash.svg?react";
 import CategoryDrawer from "../components/category/CategoryDrawer";
 import DeleteCategoryModal from "../components/category/DeleteCategoryModal";
-import { useCategories, type CategoryItem } from "../api/categories";
+import { useListCategories } from "../hooks/category";
+import type { CategoryItem } from "../api/types/category";
 
 export default function Categories() {
-  const { data, loading, error } = useCategories();
+  const { data, loading, error } = useListCategories();
   const [showForm, setShowForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState<CategoryItem | null>(
     null,

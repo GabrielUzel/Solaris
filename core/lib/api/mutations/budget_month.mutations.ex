@@ -5,38 +5,56 @@ defmodule SolarisCoreWeb.Api.Mutations.BudgetMonthMutations do
 
   object :budget_month_mutations do
     field :open_budget_month, non_null(:budget_month) do
-      arg :year, non_null(:integer)
-      arg :month, non_null(:integer)
+      arg(:year, non_null(:integer))
+      arg(:month, non_null(:integer))
       resolve(&BudgetMonthResolver.open_budget_month/3)
     end
 
+    field :ensure_current_budget_month, non_null(:budget_month) do
+      resolve(&BudgetMonthResolver.ensure_current_budget_month/3)
+    end
+
+    field :ensure_budget_month_by_reference, non_null(:budget_month) do
+      arg(:year, non_null(:integer))
+      arg(:month, non_null(:integer))
+      resolve(&BudgetMonthResolver.ensure_budget_month_by_reference/3)
+    end
+
     field :initialize_budget_month_from_planned_transactions, non_null(:budget_month) do
-      arg :budget_month_id, non_null(:id)
+      arg(:budget_month_id, non_null(:id))
       resolve(&BudgetMonthResolver.initialize_budget_month_from_planned_transactions/3)
     end
 
-    field :add_manual_transaction_to_budget_month, non_null(:budget_month) do
-      arg :budget_month_id, non_null(:id)
-      arg :input, non_null(:add_manual_transaction_input)
-      resolve(&BudgetMonthResolver.add_manual_transaction_to_budget_month/3)
+    field :create_manual_transaction, non_null(:budget_month) do
+      arg(:budget_month_id, non_null(:id))
+      arg(:input, non_null(:create_manual_transaction_input))
+      resolve(&BudgetMonthResolver.create_manual_transaction/3)
     end
 
-    field :confirm_budget_month_transaction, non_null(:budget_month) do
-      arg :budget_month_id, non_null(:id)
-      arg :transaction_id, non_null(:id)
-      resolve(&BudgetMonthResolver.confirm_budget_month_transaction/3)
+    field :pay_transaction, non_null(:budget_month) do
+      arg(:budget_month_id, non_null(:id))
+      arg(:transaction_id, non_null(:id))
+      arg(:input, :pay_transaction_input)
+      resolve(&BudgetMonthResolver.pay_transaction/3)
     end
 
-    field :skip_budget_month_transaction, non_null(:budget_month) do
-      arg :budget_month_id, non_null(:id)
-      arg :transaction_id, non_null(:id)
-      resolve(&BudgetMonthResolver.skip_budget_month_transaction/3)
+    field :skip_transaction, non_null(:budget_month) do
+      arg(:budget_month_id, non_null(:id))
+      arg(:transaction_id, non_null(:id))
+      resolve(&BudgetMonthResolver.skip_transaction/3)
     end
 
-    field :remove_manual_transaction_from_budget_month, non_null(:boolean) do
-      arg :budget_month_id, non_null(:id)
-      arg :transaction_id, non_null(:id)
-      resolve(&BudgetMonthResolver.remove_manual_transaction_from_budget_month/3)
+    field :update_manual_transaction, non_null(:budget_month) do
+      arg(:budget_month_id, non_null(:id))
+      arg(:transaction_id, non_null(:id))
+      arg(:input, non_null(:update_manual_transaction_input))
+      resolve(&BudgetMonthResolver.update_manual_transaction/3)
+    end
+
+    field :delete_manual_transaction, non_null(:boolean) do
+      arg(:budget_month_id, non_null(:id))
+      arg(:transaction_id, non_null(:id))
+      resolve(&BudgetMonthResolver.delete_manual_transaction/3)
     end
   end
 end

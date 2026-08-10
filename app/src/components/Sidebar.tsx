@@ -25,7 +25,7 @@ export default function Sidebar({ current, navigate }: Props) {
   return (
     <aside className="flex h-full w-56 shrink-0 flex-col border-r border-primary-border bg-menu-background">
       <div className="flex items-center gap-2 border-b border-primary-border px-5 py-5">
-        <img src="/icons/logo.svg" alt="Solaris" className="h-7 w-7" />
+        <img src="/icons/logo.svg" alt="Logo" className="h-7 w-7" />
         <span className="text-lg font-semibold tracking-tight text-primary-text">
           Solaris
         </span>

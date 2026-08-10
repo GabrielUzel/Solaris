@@ -1,8 +1,14 @@
 defmodule SolarisCore.Application.Queries.GetCategoryById do
-  alias SolarisCore.Infrastructure.Repositories.CategoryRepo
+  import Ecto.Query
 
-  @spec execute(String.t()) :: {:ok, term()} | {:error, :not_found}
+  alias SolarisCore.Repo
+  alias SolarisCore.Infrastructure.Schemas.CategorySchema
+
+  @spec execute(String.t()) :: {:ok, map()} | {:error, :not_found}
   def execute(id) do
-    CategoryRepo.get(id)
+    case Repo.one(from(c in CategorySchema, where: c.id == ^id)) do
+      nil -> {:error, :not_found}
+      category -> {:ok, category}
+    end
   end
 end

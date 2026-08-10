@@ -4,25 +4,15 @@ defmodule SolarisCoreWeb.Api.Resolvers.PlannedTransactionResolver do
   alias SolarisCore.Application.Commands.DeactivatePlannedTransaction
   alias SolarisCore.Application.Commands.ReactivatePlannedTransaction
   alias SolarisCore.Application.Commands.DeletePlannedTransaction
-  alias SolarisCore.Application.Queries.ListPlannedTransactions
   alias SolarisCore.Application.Queries.GetPlannedTransactionById
   alias SolarisCore.Application.Queries.ListActivePlannedTransactions
-  alias SolarisCore.Application.Queries.PreviewPlannedTransactionsForMonth
-
-  def list_planned_transactions(_parent, _args, _resolution) do
-    {:ok, ListPlannedTransactions.execute()}
-  end
 
   def get_planned_transaction_by_id(_parent, %{id: id}, _resolution) do
     GetPlannedTransactionById.execute(id)
   end
 
   def list_active_planned_transactions(_parent, _args, _resolution) do
-    {:ok, ListActivePlannedTransactions.execute()}
-  end
-
-  def preview_planned_transactions_for_month(_parent, %{year: year, month: month}, _resolution) do
-    {:ok, PreviewPlannedTransactionsForMonth.execute(year, month)}
+    ListActivePlannedTransactions.execute()
   end
 
   def create_planned_transaction(_parent, %{input: input}, _resolution) do

@@ -1,6 +1,6 @@
 import Button from "../Button";
-import { useDeleteCategory } from "../../api/categories";
-import type { CategoryItem } from "../../api/categories";
+import { useDeleteCategory } from "../../hooks/category";
+import type { CategoryItem } from "../../api/types/category";
 
 type Props = {
   open: boolean;

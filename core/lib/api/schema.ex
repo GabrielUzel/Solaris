@@ -8,8 +8,8 @@ defmodule SolarisCoreWeb.Api.Schema do
   import_types(SolarisCoreWeb.Api.Types.BudgetMonthTypes)
 
   import_types(SolarisCoreWeb.Api.Queries.CategoryQueries)
-  import_types(SolarisCoreWeb.Api.Queries.PlannedTransactionQueries)
   import_types(SolarisCoreWeb.Api.Queries.BudgetMonthQueries)
+  import_types(SolarisCoreWeb.Api.Queries.PlannedTransactionQueries)
 
   import_types(SolarisCoreWeb.Api.Mutations.CategoryMutations)
   import_types(SolarisCoreWeb.Api.Mutations.PlannedTransactionMutations)
@@ -22,8 +22,8 @@ defmodule SolarisCoreWeb.Api.Schema do
     end
 
     import_fields(:category_queries)
-    import_fields(:planned_transaction_queries)
     import_fields(:budget_month_queries)
+    import_fields(:planned_transaction_queries)
   end
 
   mutation do

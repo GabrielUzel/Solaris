@@ -1,11 +1,9 @@
 import { FormEvent, useEffect, useState } from "react";
 import Button from "../../components/Button";
 import Dropdown from "../../components/Dropdown";
-import {
-  useCreateCategory,
-  useUpdateCategory,
-  type CategoryItem,
-} from "../../api/categories";
+import { useCreateCategory, useUpdateCategory } from "../../hooks/category";
+import type { CategoryItem } from "../../api/types/category";
+import type { FinancialType } from "../../api/types/common";
 
 type Props = {
   open: boolean;
@@ -13,14 +11,12 @@ type Props = {
   category?: CategoryItem | null;
 };
 
-type CategoryType = "INCOME" | "EXPENSE";
-
 export default function CategoryDrawer({ open, onClose, category }: Props) {
   const [createCategory, { loading: creating }] = useCreateCategory();
   const [updateCategory, { loading: updating }] = useUpdateCategory();
 
   const [name, setName] = useState("");
-  const [type, setType] = useState<CategoryType>("EXPENSE");
+  const [type, setType] = useState<FinancialType>("EXPENSE");
   const [color, setColor] = useState("#14b8a6");
 
   const isEditing = Boolean(category);
@@ -107,7 +103,7 @@ export default function CategoryDrawer({ open, onClose, category }: Props) {
               <Dropdown
                 label="Selecione o tipo"
                 value={type}
-                onChange={(value) => setType(value as CategoryType)}
+                onChange={(value) => setType(value as FinancialType)}
                 options={[
                   { label: "Despesa", value: "EXPENSE" },
                   { label: "Receita", value: "INCOME" },
