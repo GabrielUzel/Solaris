@@ -4,7 +4,7 @@ defmodule SolarisCore.MixProject do
   def project do
     [
       app: :solaris_core,
-      version: "0.2.0",
+      version: "0.5.0",
       elixir: "~> 1.17",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
@@ -50,7 +50,8 @@ defmodule SolarisCore.MixProject do
         steps: [:assemble, &Burrito.wrap/1],
         burrito: [
           targets: [
-            linux: [os: :linux, cpu: :x86_64]
+            linux: [os: :linux, cpu: :x86_64],
+            windows: [os: :windows, cpu: :x86_64]
           ]
         ]
       ]
