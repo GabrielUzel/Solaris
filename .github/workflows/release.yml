@@ -140,7 +140,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: solaris-backend-sidecars
-          path: sidecars/
+          path: |
+            sidecars/solaris_core-x86_64-unknown-linux-gnu
+            sidecars/solaris_core-x86_64-pc-windows-msvc.exe
           if-no-files-found: error
           retention-days: 1
 
@@ -157,20 +159,48 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: solaris-backend-sidecars
-          path: ${{ env.APP_DIR }}/src-tauri
+          path: downloaded-sidecars
 
-      - name: Verify Linux sidecar
+      - name: Prepare Linux sidecar
         shell: bash
         run: |
           set -euo pipefail
 
-          sidecar="${APP_DIR}/src-tauri/${SIDECAR_NAME}-x86_64-unknown-linux-gnu"
+          mkdir -p "${APP_DIR}/src-tauri"
 
-          test -f "${sidecar}"
-          test -x "${sidecar}"
+          echo "Downloaded sidecars:"
+          find downloaded-sidecars \
+            -maxdepth 3 \
+            -type f \
+            -print
 
-          ls -lah "${sidecar}"
-          file "${sidecar}"
+          linux_sidecar="$(
+            find downloaded-sidecars \
+              -type f \
+              -name "${SIDECAR_NAME}-x86_64-unknown-linux-gnu" \
+              | head -n 1
+          )"
+
+          if [ -z "${linux_sidecar}" ]; then
+            echo "Linux sidecar was not found."
+            echo "Files downloaded from the artifact:"
+            find downloaded-sidecars -type f -print
+            exit 1
+          fi
+
+          target="${APP_DIR}/src-tauri/${SIDECAR_NAME}-x86_64-unknown-linux-gnu"
+
+          cp "${linux_sidecar}" "${target}"
+          chmod +x "${target}"
+
+          echo "Prepared Linux sidecar:"
+          ls -lah "${target}"
+          file "${target}"
+
+          if [ ! -x "${target}" ]; then
+            echo "Linux sidecar does not have execute permission."
+            exit 1
+          fi
 
       - name: Install Tauri Linux dependencies
         run: |
@@ -239,18 +269,35 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: solaris-backend-sidecars
-          path: ${{ env.APP_DIR }}/src-tauri
+          path: downloaded-sidecars
 
-      - name: Verify Windows sidecar
+      - name: Prepare Windows sidecar
         shell: pwsh
         run: |
-          $sidecar = "${env:APP_DIR}/src-tauri/${env:SIDECAR_NAME}-x86_64-pc-windows-msvc.exe"
+          $source = Get-ChildItem `
+            -Path "downloaded-sidecars" `
+            -Filter "${env:SIDECAR_NAME}-x86_64-pc-windows-msvc.exe" `
+            -File `
+            -Recurse
 
-          if (-not (Test-Path $sidecar)) {
-            Write-Error "Windows sidecar was not found: $sidecar"
+          if ($source.Count -eq 0) {
+            Write-Error "Windows sidecar was not found."
           }
 
-          Get-Item $sidecar
+          New-Item `
+            -ItemType Directory `
+            -Force `
+            -Path "${env:APP_DIR}/src-tauri" | Out-Null
+
+          $target = "${env:APP_DIR}/src-tauri/${env:SIDECAR_NAME}-x86_64-pc-windows-msvc.exe"
+
+          Copy-Item `
+            -Path $source[0].FullName `
+            -Destination $target `
+            -Force
+
+          Write-Host "Prepared Windows sidecar:"
+          Get-Item $target
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
