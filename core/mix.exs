@@ -26,21 +26,23 @@ defmodule SolarisCore.MixProject do
 
   defp deps do
     [
-      {:phoenix, "~> 1.7.21"},
-      {:phoenix_ecto, "~> 4.5"},
-      {:ecto_sql, "~> 3.10"},
+      {:phoenix, "~> 1.7.24"},
+      {:phoenix_ecto, "~> 4.7"},
+      {:ecto_sql, "~> 3.14"},
       {:ecto_sqlite3, ">= 0.0.0"},
-      {:phoenix_live_dashboard, "~> 0.8.3"},
-      {:telemetry_metrics, "~> 1.0"},
-      {:telemetry_poller, "~> 1.0"},
+      {:phoenix_live_dashboard, "~> 0.8.7"},
+      {:phoenix_live_view, "~> 1.2.9"},
+      {:telemetry_metrics, "~> 1.1"},
+      {:telemetry_poller, "~> 1.3"},
       {:gettext, "~> 0.26"},
-      {:jason, "~> 1.2"},
-      {:dns_cluster, "~> 0.1.1"},
-      {:bandit, "~> 1.5"},
-      {:absinthe, "~> 1.9"},
-      {:absinthe_plug, "~> 1.5.9"},
+      {:jason, "~> 1.4"},
+      {:dns_cluster, "~> 0.1.3"},
+      {:bandit, "~> 1.12.5"},
+      {:absinthe, "~> 1.11"},
+      {:absinthe_plug, "~> 1.5.10"},
       {:cors_plug, "~> 3.0.3"},
-      {:burrito, "~> 1.5"}
+      {:burrito, "~> 1.6"},
+      {:dataloader, "~> 2.0.2"}
     ]
   end
 

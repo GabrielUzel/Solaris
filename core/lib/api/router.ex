@@ -3,6 +3,7 @@ defmodule SolarisCoreWeb.Router do
 
   pipeline :api do
     plug(:accepts, ["json"])
+    plug(SolarisCoreWeb.Api.GraphqlContext)
   end
 
   scope "/api" do

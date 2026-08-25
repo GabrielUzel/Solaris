@@ -35,7 +35,7 @@ defmodule SolarisCore.Application.Queries.ListBudgetMonthTransactions do
             origin: t.origin,
             status: t.status,
             notes: t.notes,
-            inserted_at: t.inserted_at,
+            created_at: t.inserted_at,
             updated_at: t.updated_at
           }
         )
