@@ -21,11 +21,5 @@ defmodule SolarisCoreWeb.Api.Queries.PortfolioQueries do
       arg(:to, :date)
       resolve(&PortfolioResolver.income_history/3)
     end
-
-    field :benchmark_comparison, non_null(:benchmark_comparison) do
-      arg(:investment_id, non_null(:id))
-      arg(:benchmark, non_null(:benchmark_type))
-      resolve(&PortfolioResolver.benchmark_comparison/3)
-    end
   end
 end

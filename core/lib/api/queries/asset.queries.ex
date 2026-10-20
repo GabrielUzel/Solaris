@@ -12,7 +12,13 @@ defmodule SolarisCoreWeb.Api.Queries.AssetQueries do
     field :assets, non_null(list_of(non_null(:asset))) do
       arg(:asset_type, :asset_type)
       arg(:market, :asset_market)
+      arg(:active, :boolean, default_value: true)
       resolve(&AssetResolver.assets/3)
+    end
+
+    field :validate_asset_ticker, non_null(:asset_ticker_validation) do
+      arg(:input, non_null(:validate_asset_ticker_input))
+      resolve(&AssetResolver.validate_asset_ticker/3)
     end
   end
 end

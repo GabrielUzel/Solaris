@@ -69,6 +69,12 @@ defmodule SolarisCore.Infrastructure.Repositories.InvestmentRepo do
     |> Enum.map(&to_domain/1)
   end
 
+  def open_for_asset?(asset_id) do
+    InvestmentSchema
+    |> where([i], i.asset_id == ^asset_id and i.status == :open)
+    |> Repo.exists?()
+  end
+
   def list(filters \\ []) do
     InvestmentSchema
     |> apply_filters(filters)

@@ -19,7 +19,10 @@ defmodule SolarisCoreWeb.Api.Resolvers.InvestmentResolver do
     invalid_sale_type: "Tipo de venda inválido",
     invalid_quantity: "Quantidade inválida",
     invalid_unit_price_cents: "Preço unitário inválido",
-    exchange_rate_provider_not_configured: "Provedor de câmbio não configurado"
+    exchange_rate_provider_not_configured: "Provedor de câmbio não configurado",
+    asset_inactive: "Este ativo está desativado. Reative-o antes de criar uma posição.",
+    unauthorized: "Chave da API inválida ou não autorizada. Verifique nas Configurações.",
+    rate_limited: "Limite de requisições da API excedido. Tente novamente em instantes."
   }
 
   @default_error_message "Não foi possível concluir a operação"
@@ -184,6 +187,10 @@ defmodule SolarisCoreWeb.Api.Resolvers.InvestmentResolver do
   defp translate_error({:error, reason}, overrides) when is_atom(reason) do
     message = Map.get(overrides, reason) || Map.get(@error_messages, reason, @default_error_message)
     {:error, message}
+  end
+
+  defp translate_error({:error, _reason}, _overrides) do
+    {:error, @default_error_message}
   end
 
   defp translate_error(result, _overrides), do: result

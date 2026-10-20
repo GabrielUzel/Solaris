@@ -1,6 +1,7 @@
 defmodule SolarisCore.Infrastructure.MarketData.FinnhubClient do
   alias SolarisCore.Infrastructure.MarketData.HttpClient
   alias SolarisCore.Infrastructure.MarketData.PriceConverter
+  alias SolarisCore.Infrastructure.Repositories.AppSettingRepo
 
   @type quote :: %{price_cents: integer(), quoted_at: Date.t()}
   @type candle_point :: %{date: Date.t(), close_cents: integer()}
@@ -59,9 +60,9 @@ defmodule SolarisCore.Infrastructure.MarketData.FinnhubClient do
   end
 
   defp api_key do
-    case System.get_env("FINNHUB_API_KEY") do
-      key when is_binary(key) and byte_size(key) > 0 -> {:ok, key}
-      _missing -> {:error, :missing_finnhub_api_key}
+    case AppSettingRepo.get("finnhub_api_key") do
+      {:ok, %{value: key}} when byte_size(key) > 0 -> {:ok, key}
+      _ -> {:error, :finnhub_key_not_configured}
     end
   end
 

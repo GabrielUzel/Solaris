@@ -15,6 +15,7 @@ defmodule SolarisCore.Infrastructure.Schemas.AssetSchema do
     field(:market, Ecto.Enum, values: [:b3, :us_market])
     field(:currency, Ecto.Enum, values: [:BRL, :USD])
     field(:category, :string)
+    field(:active, :boolean, default: true)
 
     field(:price_source, Ecto.Enum,
       values: [:brapi_b3, :brapi_treasury, :finnhub_us, :manual_curve]
@@ -47,6 +48,7 @@ defmodule SolarisCore.Infrastructure.Schemas.AssetSchema do
       :market,
       :currency,
       :category,
+      :active,
       :price_source,
       :external_symbol,
       :indexer,

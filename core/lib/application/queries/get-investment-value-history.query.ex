@@ -1,30 +1,4 @@
 defmodule SolarisCore.Application.Queries.GetInvestmentValueHistory do
-  @moduledoc """
-  Serie temporal do valor de uma `investment` para o grafico de evolucao.
-
-  Cada ponto corresponde a uma data com `asset_price_snapshot` em cache no
-  intervalo pedido — nao dispara N chamadas a brapi/Finnhub por ponto do
-  grafico. Usa o cache local (`asset_price_snapshots`), disparando uma
-  sincronizacao apenas quando o intervalo pedido nao esta coberto por nenhum
-  snapshot.
-
-  Para cada data com preco disponivel:
-
-  - `invested_amount_cents`: custo acumulado (total investido) das transacoes
-    ate a data;
-  - `market_value_cents`: valor de mercado da posicao na data (marcacao na
-    curva para renda fixa, conversao cambial para ativos em USD);
-  - `average_price_cents`: preco medio ponderado das entradas ate a data;
-  - `market_price_cents`: preco de fechamento em cache na data (nil quando
-    nao ha snapshot).
-
-  Opcoes:
-
-  - `:from` / `:to` — intervalo (default: `opened_at` ate hoje);
-  - `:asset_price_provider` / `:exchange_rate_provider` — sobrescrevem a
-    config (util em testes).
-  """
-
   alias SolarisCore.Finance.Domain.Asset
   alias SolarisCore.Finance.Domain.InvestmentAnalysisRules
   alias SolarisCore.Finance.Domain.InvestmentRules
@@ -51,32 +25,36 @@ defmodule SolarisCore.Application.Queries.GetInvestmentValueHistory do
         ExchangeRateSnapshotRepo.list_by_pair_and_date_range(@usd_brl_pair, from, to)
         |> Map.new(&{&1.reference_date, &1.rate})
 
-      points =
-        if asset.asset_type == :fixed_income do
-          # Renda fixa não tem cotação pública: gera pontos nas datas das
-          # transações (e na data de referência) via marcação na curva.
-          build_fixed_income_points(asset, investment, transactions, from, to)
-        else
-          snapshots =
-            asset.id
-            |> AssetPriceSnapshotRepo.list_by_asset_and_date_range(from, to)
-            |> maybe_sync(asset, from, to, opts)
-
-          build_points(asset, investment, transactions, snapshots, rate_lookup, opts)
+      if asset.asset_type == :fixed_income do
+        build_fixed_income_points(asset, investment, transactions, from, to)
+      else
+        with {:ok, snapshots} <-
+               asset.id
+               |> AssetPriceSnapshotRepo.list_by_asset_and_date_range(from, to)
+               |> maybe_sync(asset, from, to, opts) do
+          {:ok, build_points(asset, investment, transactions, snapshots, rate_lookup, opts)}
         end
-
-      {:ok, points}
+      end
     end
   end
 
   defp maybe_sync([], asset, from, to, opts) do
     case sync_range(asset, from, to, opts) do
-      :ok -> AssetPriceSnapshotRepo.list_by_asset_and_date_range(asset.id, from, to)
-      {:error, _reason} -> []
+      :ok ->
+        {:ok, AssetPriceSnapshotRepo.list_by_asset_and_date_range(asset.id, from, to)}
+
+      {:error, :brapi_key_not_configured} ->
+        {:error, :brapi_key_not_configured}
+
+      {:error, :finnhub_key_not_configured} ->
+        {:error, :finnhub_key_not_configured}
+
+      {:error, _reason} ->
+        {:ok, []}
     end
   end
 
-  defp maybe_sync(snapshots, _asset, _from, _to, _opts), do: snapshots
+  defp maybe_sync(snapshots, _asset, _from, _to, _opts), do: {:ok, snapshots}
 
   defp sync_range(%Asset{asset_type: :fixed_income}, _from, _to, _opts), do: :ok
 
@@ -101,12 +79,16 @@ defmodule SolarisCore.Application.Queries.GetInvestmentValueHistory do
 
         :ok
 
+      {:error, :finnhub_key_not_configured} ->
+        {:error, :finnhub_key_not_configured}
+
       {:error, _reason} ->
         {:error, :sync_failed}
     end
   end
 
-  defp persist_price_points(_asset, {:error, _reason}), do: {:error, :sync_failed}
+  defp persist_price_points(_asset, {:error, :brapi_key_not_configured}),
+    do: {:error, :brapi_key_not_configured}
 
   defp persist_price_points(asset, {:ok, points}) do
     Enum.each(points, fn %{date: date, close_cents: close_cents} ->
@@ -115,6 +97,8 @@ defmodule SolarisCore.Application.Queries.GetInvestmentValueHistory do
 
     :ok
   end
+
+  defp persist_price_points(_asset, _unexpected), do: {:error, :sync_failed}
 
   defp persist_snapshot(asset_id, reference_date, close_price_cents, source) do
     %{
@@ -130,12 +114,22 @@ defmodule SolarisCore.Application.Queries.GetInvestmentValueHistory do
   defp build_points(asset, investment, transactions, snapshots, rate_lookup, opts) do
     Enum.flat_map(snapshots, fn snapshot ->
       date = snapshot.reference_date
-      transactions_up_to = Enum.filter(transactions, &(Date.compare(&1.transaction_date, date) != :gt))
+
+      transactions_up_to =
+        Enum.filter(transactions, &(Date.compare(&1.transaction_date, date) != :gt))
 
       invested_amount_cents = InvestmentRules.total_invested_cents(transactions_up_to)
       average_price_cents = InvestmentRules.average_price_cents(transactions_up_to)
 
-      case market_value_at(asset, investment, transactions_up_to, date, snapshot, rate_lookup, opts) do
+      case market_value_at(
+             asset,
+             investment,
+             transactions_up_to,
+             date,
+             snapshot,
+             rate_lookup,
+             opts
+           ) do
         nil ->
           []
 
@@ -163,27 +157,35 @@ defmodule SolarisCore.Application.Queries.GetInvestmentValueHistory do
       |> Enum.uniq()
       |> Enum.sort(Date)
 
-    with {:ok, indexer_series} <- fetch_indexer_series(asset, investment.opened_at, to) do
-      Enum.map(dates, fn date ->
-        transactions_up_to =
-          Enum.filter(transactions, &(Date.compare(&1.transaction_date, date) != :gt))
+    case fetch_indexer_series(asset, investment.opened_at, to) do
+      {:ok, indexer_series} ->
+        points =
+          Enum.map(dates, fn date ->
+            transactions_up_to =
+              Enum.filter(transactions, &(Date.compare(&1.transaction_date, date) != :gt))
 
-        market_value_cents =
-          InvestmentAnalysisRules.current_market_value_cents(asset, transactions_up_to, %{
-            indexer_series: indexer_series,
-            reference_date: date
-          })
+            market_value_cents =
+              InvestmentAnalysisRules.current_market_value_cents(asset, transactions_up_to, %{
+                indexer_series: indexer_series,
+                reference_date: date
+              })
 
-        %{
-          date: date,
-          invested_amount_cents: InvestmentRules.total_invested_cents(transactions_up_to),
-          market_value_cents: market_value_cents,
-          average_price_cents: InvestmentRules.average_price_cents(transactions_up_to),
-          market_price_cents: nil
-        }
-      end)
-    else
-      {:error, _reason} -> []
+            %{
+              date: date,
+              invested_amount_cents: InvestmentRules.total_invested_cents(transactions_up_to),
+              market_value_cents: market_value_cents,
+              average_price_cents: InvestmentRules.average_price_cents(transactions_up_to),
+              market_price_cents: nil
+            }
+          end)
+
+        {:ok, points}
+
+      {:error, :brapi_key_not_configured} ->
+        {:error, :brapi_key_not_configured}
+
+      {:error, _reason} ->
+        {:ok, []}
     end
   end
 
@@ -271,6 +273,7 @@ defmodule SolarisCore.Application.Queries.GetInvestmentValueHistory do
   defp fetch_indexer_series(%Asset{indexer: indexer}, from_date, to_date) do
     case BrapiClient.fetch_macro_indicator(Atom.to_string(indexer), from_date, to_date) do
       {:ok, indexer_series} -> {:ok, indexer_series}
+      {:error, :brapi_key_not_configured} -> {:error, :brapi_key_not_configured}
       {:error, _reason} -> {:error, :price_unavailable}
     end
   end

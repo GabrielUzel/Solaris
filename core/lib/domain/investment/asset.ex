@@ -16,7 +16,8 @@ defmodule SolarisCore.Finance.Domain.Asset do
     :maturity_date,
     :liquidity,
     :created_at,
-    :updated_at
+    :updated_at,
+    active: true
   ]
 
   @type t :: %__MODULE__{
@@ -34,6 +35,7 @@ defmodule SolarisCore.Finance.Domain.Asset do
           issuer: String.t() | nil,
           maturity_date: Date.t() | nil,
           liquidity: :daily | :maturity_only | nil,
+          active: boolean(),
           created_at: term() | nil,
           updated_at: term() | nil
         }
@@ -61,6 +63,12 @@ defmodule SolarisCore.Finance.Domain.Asset do
 
   def foreign_currency?(%__MODULE__{currency: :USD}), do: true
   def foreign_currency?(%__MODULE__{}), do: false
+
+  @spec deactivate(t()) :: t()
+  def deactivate(%__MODULE__{} = asset), do: %{asset | active: false}
+
+  @spec reactivate(t()) :: t()
+  def reactivate(%__MODULE__{} = asset), do: %{asset | active: true}
 
   defp validate_ticker(ticker) when is_binary(ticker) and byte_size(ticker) > 0, do: :ok
   defp validate_ticker(_), do: {:error, :ticker_required}

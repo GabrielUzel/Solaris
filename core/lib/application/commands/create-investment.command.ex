@@ -10,6 +10,7 @@ defmodule SolarisCore.Application.Commands.CreateInvestment do
   @spec execute(map(), keyword()) :: {:ok, Investment.t()} | {:error, term()}
   def execute(attrs, opts \\ []) do
     with {:ok, asset} <- AssetRepo.get(attrs[:asset_id]),
+         :ok <- ensure_asset_active(asset),
          {:ok, fx_attrs} <-
            ForeignCurrencyConversion.currency_attrs(
              asset,
@@ -23,6 +24,9 @@ defmodule SolarisCore.Application.Commands.CreateInvestment do
       {:ok, created}
     end
   end
+
+  defp ensure_asset_active(%Asset{active: false}), do: {:error, :asset_inactive}
+  defp ensure_asset_active(%Asset{active: true}), do: :ok
 
   defp build_investment(%Asset{} = asset, attrs) do
     Investment.new(%{

@@ -52,6 +52,7 @@ defmodule SolarisCore.Infrastructure.MarketData.AssetPriceProviderImpl do
       case fetch_b3_historical(symbol, asset.asset_type, date) do
         {:ok, points} -> pick_close_for_date(points, date)
         {:error, reason} -> {:error, reason}
+        _unexpected -> {:error, :price_unavailable}
       end
     end
   end

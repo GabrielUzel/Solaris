@@ -31,6 +31,20 @@ defmodule SolarisCore.Infrastructure.Repositories.AssetRepo do
     end
   end
 
+  def update(%Asset{} = domain_asset) do
+    case Repo.get(AssetSchema, domain_asset.id) do
+      nil -> {:error, :not_found}
+      schema ->
+        schema
+        |> AssetSchema.changeset(to_schema_attrs(domain_asset))
+        |> Repo.update()
+        |> case do
+          {:ok, updated} -> {:ok, to_domain(updated)}
+          error -> error
+        end
+    end
+  end
+
   def list(filters \\ []) do
     AssetSchema
     |> apply_filters(filters)
@@ -44,6 +58,7 @@ defmodule SolarisCore.Infrastructure.Repositories.AssetRepo do
       {:ids, ids}, acc -> where(acc, [a], a.id in ^ids)
       {:asset_type, asset_type}, acc -> where(acc, [a], a.asset_type == ^asset_type)
       {:market, market}, acc -> where(acc, [a], a.market == ^market)
+      {:active, active}, acc -> where(acc, [a], a.active == ^active)
       _, acc -> acc
     end)
   end
@@ -56,6 +71,7 @@ defmodule SolarisCore.Infrastructure.Repositories.AssetRepo do
       market: domain.market,
       currency: domain.currency,
       category: domain.category,
+      active: domain.active,
       price_source: domain.price_source,
       external_symbol: domain.external_symbol,
       indexer: domain.indexer,
@@ -76,6 +92,7 @@ defmodule SolarisCore.Infrastructure.Repositories.AssetRepo do
         market: schema.market,
         currency: schema.currency,
         category: schema.category,
+        active: schema.active,
         price_source: schema.price_source,
         external_symbol: schema.external_symbol,
         indexer: schema.indexer,

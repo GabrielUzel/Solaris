@@ -1,27 +1,4 @@
 defmodule SolarisCore.Application.Queries.GetPortfolioSummary do
-  @moduledoc """
-  Agrega todas as `investments` abertas em um resumo consolidado em centavos
-  de BRL.
-
-  Evita N+1: carrega assets, transacoes, proventos e snapshots de preco em
-  lote (uma query por entidade) antes de calcular a analise de cada posicao.
-  Para datas sem snapshot em cache, cai no provider (cache-first) — o caso
-  comum de carteira ja sincronizada nao dispara chamadas de rede por ativo.
-
-  Campos que dependem de preco de mercado (`current_market_value_cents`,
-  `profit_loss_cents`, `roi_percent`, `twr_percent`, `xirr_percent`) podem
-  vir como `{:error, :price_unavailable}` quando o preco nao pode ser
-  resolvido (ex: ativo `us_market` sem retorno do Finnhub). Esses valores
-  sao excluidos dos totais de mercado e da alocacao, mas nao derrubam o
-  resumo dos demais ativos.
-
-  Opcoes:
-
-  - `:reference_date` — data de referencia (default: hoje);
-  - `:asset_price_provider` / `:exchange_rate_provider` — sobrescrevem a
-    config (util em testes).
-  """
-
   alias SolarisCore.Finance.Domain.Asset
   alias SolarisCore.Finance.Domain.Investment
   alias SolarisCore.Finance.Domain.InvestmentAnalysisRules
@@ -71,13 +48,15 @@ defmodule SolarisCore.Application.Queries.GetPortfolioSummary do
 
     assets = AssetRepo.list(ids: asset_ids) |> Map.new(&{&1.id, &1})
 
+    investment_ids = Enum.map(investments, & &1.id)
+
     transactions_by_investment =
-      investments
+      investment_ids
       |> InvestmentTransactionRepo.list_by_investment_ids()
       |> Enum.group_by(& &1.investment_id)
 
     incomes_by_investment =
-      investments
+      investment_ids
       |> DividendIncomeRepo.list_by_investment_ids()
       |> Enum.group_by(& &1.investment_id)
 
@@ -362,23 +341,33 @@ defmodule SolarisCore.Application.Queries.GetPortfolioSummary do
 
   defp with_curve_quantity(%InvestmentTransaction{} = transaction), do: transaction
 
-  defp allocation_by_type(analyses, total_market_value_cents) do
-    analyses
-    |> Enum.filter(fn analysis ->
-      match?({:error, _reason}, analysis.current_market_value_cents) == false
-    end)
-    |> Enum.group_by(& &1.asset_type)
-    |> Enum.map(fn {asset_type, items} ->
-      total_value_cents =
-        Enum.reduce(items, 0, fn item, acc -> item.current_market_value_cents + acc end)
+  defp allocation_by_type(analyses, _total_market_value_cents) do
+    slices =
+      analyses
+      |> Enum.group_by(& &1.asset_type)
+      |> Enum.map(fn {asset_type, items} ->
+        total_value_cents =
+          Enum.reduce(items, 0, fn item, acc -> allocation_value(item) + acc end)
 
-      %{
-        asset_type: asset_type,
-        total_value_cents: total_value_cents,
-        percentage: percentage(total_value_cents, total_market_value_cents)
-      }
+        %{
+          asset_type: asset_type,
+          total_value_cents: total_value_cents,
+          percentage: 0.0
+        }
+      end)
+
+    allocation_total = Enum.reduce(slices, 0, &(&1.total_value_cents + &2))
+
+    Enum.map(slices, fn slice ->
+      %{slice | percentage: percentage(slice.total_value_cents, allocation_total)}
     end)
   end
+
+  defp allocation_value(%{current_market_value_cents: {:error, _reason}, total_invested_cents: total_invested_cents}) do
+    total_invested_cents
+  end
+
+  defp allocation_value(%{current_market_value_cents: value}), do: value
 
   defp ranking_by_return(analyses) do
     analyses

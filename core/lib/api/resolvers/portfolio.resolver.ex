@@ -1,5 +1,4 @@
 defmodule SolarisCoreWeb.Api.Resolvers.PortfolioResolver do
-  alias SolarisCore.Application.Queries.GetBenchmarkComparison
   alias SolarisCore.Application.Queries.GetIncomeHistory
   alias SolarisCore.Application.Queries.GetInvestmentValueHistory
   alias SolarisCore.Application.Queries.GetPortfolioSummary
@@ -26,6 +25,8 @@ defmodule SolarisCoreWeb.Api.Resolvers.PortfolioResolver do
     case GetInvestmentValueHistory.execute(args[:investment_id], opts) do
       {:ok, points} -> {:ok, points}
       {:error, :not_found} -> {:error, "Investimento não encontrado"}
+      {:error, :brapi_key_not_configured} -> {:error, "brapi_key_not_configured"}
+      {:error, :finnhub_key_not_configured} -> {:error, "finnhub_key_not_configured"}
       {:error, reason} -> {:error, reason}
     end
   end
@@ -38,29 +39,6 @@ defmodule SolarisCoreWeb.Api.Resolvers.PortfolioResolver do
       |> maybe_put(:to, args[:to])
 
     GetIncomeHistory.execute(opts)
-  end
-
-  def benchmark_comparison(_parent, args, _resolution) do
-    case GetBenchmarkComparison.execute(args[:investment_id], benchmark: args[:benchmark]) do
-      {:ok, comparison} ->
-        {:ok,
-         %{
-           asset_return_percent: Decimal.to_float(comparison.asset_return_percent),
-           benchmark_return_percent: Decimal.to_float(comparison.benchmark_return_percent)
-         }}
-
-      {:error, :not_found} ->
-        {:error, "Investimento não encontrado"}
-
-      {:error, :benchmark_unavailable} ->
-        {:error, "Dados do benchmark indisponíveis para o período solicitado"}
-
-      {:error, :price_unavailable} ->
-        {:error, "Cotação do ativo indisponível para o período solicitado"}
-
-      {:error, reason} ->
-        {:error, reason}
-    end
   end
 
   defp rank_to_map(rank) do

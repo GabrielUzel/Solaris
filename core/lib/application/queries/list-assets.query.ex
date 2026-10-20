@@ -8,6 +8,7 @@ defmodule SolarisCore.Application.Queries.ListAssets do
       []
       |> maybe_put(:asset_type, filters[:asset_type])
       |> maybe_put(:market, filters[:market])
+      |> maybe_put(:active, filters[:active])
 
     {:ok, AssetRepo.list(repo_filters)}
   end
