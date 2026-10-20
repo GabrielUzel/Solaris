@@ -4,7 +4,9 @@ import Button from "../Button";
 import Dropdown from "../Dropdown";
 import { useListCategories } from "../../hooks/category";
 import { useCreatePlannedTransaction } from "../../hooks/planned-transaction";
+import { useToast } from "../Toast";
 import type { FinancialType, PaymentMethod } from "../../api/types/common";
+import DateInput from "../DateInput";
 
 type Props = {
   open: boolean;
@@ -19,6 +21,7 @@ export default function PlannedTransactionDrawer({
 }: Props) {
   const { data: categoriesData } = useListCategories();
   const [createPlannedTransaction, { loading }] = useCreatePlannedTransaction();
+  const { showToast } = useToast();
 
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState(0);
@@ -52,20 +55,29 @@ export default function PlannedTransactionDrawer({
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    await createPlannedTransaction({
-      variables: {
-        input: {
-          description,
-          amount,
-          type,
-          categoryId,
-          paymentMethod,
-          dayOfMonth: Number(dayOfMonth),
-          startsOn,
-          notes: notes || undefined,
+    try {
+      await createPlannedTransaction({
+        variables: {
+          input: {
+            description,
+            amount,
+            type,
+            categoryId,
+            paymentMethod,
+            dayOfMonth: Number(dayOfMonth),
+            startsOn,
+            notes: notes || undefined,
+          },
         },
-      },
-    });
+      });
+    } catch (err) {
+      showToast(
+        err instanceof Error
+          ? err.message
+          : "Não foi possível criar o lançamento planejado.",
+      );
+      return;
+    }
 
     await onSuccess?.();
     onClose();
@@ -169,16 +181,14 @@ export default function PlannedTransactionDrawer({
                 max="31"
                 value={dayOfMonth}
                 onChange={(e) => setDayOfMonth(e.target.value)}
-                className="rounded-lg border border-primary-border bg-input-background px-3 py-2 text-sm text-primary-text focus:border-focus-border focus:outline-none"
+                className="rounded-lg border border-primary-border bg-input-background px-3 py-2 text-sm text-primary-text [appearance:textfield] focus:border-focus-border focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
               />
             </Field>
 
             <Field label="Início da recorrência">
-              <input
-                type="date"
+              <DateInput
                 value={startsOn}
-                onChange={(e) => setStartsOn(e.target.value)}
-                className="rounded-lg border border-primary-border bg-input-background px-3 py-2 text-sm text-primary-text focus:border-focus-border focus:outline-none"
+                onChange={setStartsOn}
               />
             </Field>
 

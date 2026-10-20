@@ -1,5 +1,6 @@
 import Button from "../Button";
 import { useDeleteCategory } from "../../hooks/category";
+import { useToast } from "../Toast";
 import type { CategoryItem } from "../../api/types/category";
 
 type Props = {
@@ -14,17 +15,27 @@ export default function DeleteCategoryModal({
   onClose,
 }: Props) {
   const [deleteCategory, { loading }] = useDeleteCategory();
+  const { showToast } = useToast();
 
   if (!open || !category) return null;
 
   const currentCategory = category;
 
   async function handleDelete() {
-    await deleteCategory({
-      variables: {
-        id: currentCategory.id,
-      },
-    });
+    try {
+      await deleteCategory({
+        variables: {
+          id: currentCategory.id,
+        },
+      });
+    } catch (err) {
+      showToast(
+        err instanceof Error
+          ? err.message
+          : "Não foi possível excluir a categoria.",
+      );
+      return;
+    }
 
     onClose();
   }

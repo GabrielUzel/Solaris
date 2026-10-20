@@ -3,8 +3,10 @@ import Button from "../Button";
 import Dropdown from "../Dropdown";
 import { useListCategories } from "../../hooks/category";
 import { useUpdatePlannedTransaction } from "../../hooks/planned-transaction";
+import { useToast } from "../Toast";
 import type { PaymentMethod } from "../../api/types/common";
 import type { PlannedTransaction } from "../../api/types/planned-transaction";
+import DateInput from "../DateInput";
 
 type Props = {
   open: boolean;
@@ -21,6 +23,7 @@ export default function PlannedTransactionEditDrawer({
 }: Props) {
   const { data: categoriesData } = useListCategories();
   const [updatePlannedTransaction, { loading }] = useUpdatePlannedTransaction();
+  const { showToast } = useToast();
 
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
@@ -57,20 +60,29 @@ export default function PlannedTransactionEditDrawer({
 
     const amountInCents = Math.round(Number(amount.replace(",", ".")) * 100);
 
-    await updatePlannedTransaction({
-      variables: {
-        id: transaction.id,
-        input: {
-          description,
-          amount: amountInCents,
-          categoryId,
-          paymentMethod,
-          dayOfMonth: Number(dayOfMonth),
-          startsOn,
-          notes: notes || null,
+    try {
+      await updatePlannedTransaction({
+        variables: {
+          id: transaction.id,
+          input: {
+            description,
+            amount: amountInCents,
+            categoryId,
+            paymentMethod,
+            dayOfMonth: Number(dayOfMonth),
+            startsOn,
+            notes: notes || null,
+          },
         },
-      },
-    });
+      });
+    } catch (err) {
+      showToast(
+        err instanceof Error
+          ? err.message
+          : "Não foi possível salvar o lançamento planejado.",
+      );
+      return;
+    }
 
     await onSuccess?.();
     onClose();
@@ -115,7 +127,7 @@ export default function PlannedTransactionEditDrawer({
                 min="0"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="rounded-lg border border-primary-border bg-input-background px-3 py-2 text-sm text-primary-text focus:border-focus-border focus:outline-none"
+                className="rounded-lg border border-primary-border bg-input-background px-3 py-2 text-sm text-primary-text [appearance:textfield] focus:border-focus-border focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
               />
             </Field>
 
@@ -123,7 +135,7 @@ export default function PlannedTransactionEditDrawer({
               <div className="rounded-lg border border-primary-border bg-secondary-background px-3 py-2 text-sm text-secondary-text">
                 {typeLabel}
               </div>
-              <span className="text-[11px] text-secondary-text">
+              <span className="text-[11px] text-error">
                 O tipo não pode ser alterado após a criação.
               </span>
             </Field>
@@ -159,16 +171,14 @@ export default function PlannedTransactionEditDrawer({
                 max="31"
                 value={dayOfMonth}
                 onChange={(e) => setDayOfMonth(e.target.value)}
-                className="rounded-lg border border-primary-border bg-input-background px-3 py-2 text-sm text-primary-text focus:border-focus-border focus:outline-none"
+                className="rounded-lg border border-primary-border bg-input-background px-3 py-2 text-sm text-primary-text [appearance:textfield] focus:border-focus-border focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
               />
             </Field>
 
             <Field label="Início da recorrência">
-              <input
-                type="date"
+              <DateInput
                 value={startsOn}
-                onChange={(e) => setStartsOn(e.target.value)}
-                className="rounded-lg border border-primary-border bg-input-background px-3 py-2 text-sm text-primary-text focus:border-focus-border focus:outline-none"
+                onChange={setStartsOn}
               />
             </Field>
 
