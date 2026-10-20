@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from "react";
 import Button from "../../components/Button";
 import Dropdown from "../../components/Dropdown";
 import { useCreateCategory, useUpdateCategory } from "../../hooks/category";
+import { useToast } from "../Toast";
 import type { CategoryItem } from "../../api/types/category";
 import type { FinancialType } from "../../api/types/common";
 
@@ -14,6 +15,7 @@ type Props = {
 export default function CategoryDrawer({ open, onClose, category }: Props) {
   const [createCategory, { loading: creating }] = useCreateCategory();
   const [updateCategory, { loading: updating }] = useUpdateCategory();
+  const { showToast } = useToast();
 
   const [name, setName] = useState("");
   const [type, setType] = useState<FinancialType>("EXPENSE");
@@ -39,27 +41,36 @@ export default function CategoryDrawer({ open, onClose, category }: Props) {
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    if (category) {
-      await updateCategory({
-        variables: {
-          id: category.id,
-          input: {
-            name,
-            type,
-            color,
+    try {
+      if (category) {
+        await updateCategory({
+          variables: {
+            id: category.id,
+            input: {
+              name,
+              type,
+              color,
+            },
           },
-        },
-      });
-    } else {
-      await createCategory({
-        variables: {
-          input: {
-            name,
-            type,
-            color,
+        });
+      } else {
+        await createCategory({
+          variables: {
+            input: {
+              name,
+              type,
+              color,
+            },
           },
-        },
-      });
+        });
+      }
+    } catch (err) {
+      showToast(
+        err instanceof Error
+          ? err.message
+          : "Não foi possível salvar a categoria.",
+      );
+      return;
     }
 
     setName("");

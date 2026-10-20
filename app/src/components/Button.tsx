@@ -10,7 +10,7 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
 const variantClasses: Record<Variant, string> = {
   primary: "bg-button-background text-inverted-text hover:bg-button-hover",
   secondary:
-    "bg-input-background text-secondary-text hover:bg-hover-background",
+    "bg-secondary-background text-secondary-text hover:bg-hover-background",
   danger: "bg-error text-inverted-text hover:opacity-90",
   ghost: "bg-transparent text-primary-text hover:bg-hover-background",
 };

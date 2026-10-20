@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <title>Solaris — ícone de sol</title>
+  <desc>Logo minimalista de um sol amarelo com oito raios arredondados.</desc>
+  <g fill="#FFC107">
+    <circle cx="512" cy="512" r="153"/>
+    <rect x="489" y="190" width="46" height="126" rx="23"/>
+    <rect x="489" y="708" width="46" height="126" rx="23"/>
+    <rect x="190" y="489" width="126" height="46" rx="23"/>
+    <rect x="708" y="489" width="126" height="46" rx="23"/>
+    <rect x="292" y="278" width="46" height="126" rx="23" transform="rotate(-45 315 341)"/>
+    <rect x="686" y="620" width="46" height="126" rx="23" transform="rotate(-45 709 683)"/>
+    <rect x="620" y="238" width="46" height="126" rx="23" transform="rotate(45 643 355)"/>
+    <rect x="255" y="640" width="46" height="126" rx="23" transform="rotate(45 301 749)"/>
+  </g>
+</svg>

@@ -16,5 +16,6 @@ config :solaris_core, SolarisCoreWeb.Endpoint,
 
 config :solaris_core, dev_routes: true
 config :logger, :console, format: "[$level] $message\n"
+
 config :phoenix, :stacktrace_depth, 20
 config :phoenix, :plug_init_mode, :runtime

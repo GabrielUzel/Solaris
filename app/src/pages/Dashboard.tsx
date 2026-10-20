@@ -8,6 +8,7 @@ import BudgetMonthSummaryCards from "../components/budget-month/BudgetMonthSumma
 import BudgetMonthTransactionsCard from "../components/budget-month/BudgetMonthTransactionsCard";
 import PlannedTransactionsCard from "../components/planned-transactions/PlannedTransactionsCard";
 import DeleteManualTransactionModal from "../components/budget-month/DeleteManualTransactionModal";
+import DeletePlannedTransactionModal from "../components/planned-transactions/DeletePlannedTransactionModal";
 import type {
   BudgetMonthTransaction,
   BudgetMonthTransactionFilters,
@@ -26,6 +27,7 @@ import {
   useDeactivatePlannedTransaction,
   useReactivatePlannedTransaction,
 } from "../hooks/planned-transaction";
+import { useToast } from "../components/Toast";
 
 export default function Dashboard() {
   const [showManualCreateDrawer, setShowManualCreateDrawer] = useState(false);
@@ -35,6 +37,8 @@ export default function Dashboard() {
   const [selectedDeleteTransaction, setSelectedDeleteTransaction] =
     useState<BudgetMonthTransaction | null>(null);
   const [selectedEditPlanned, setSelectedEditPlanned] =
+    useState<PlannedTransaction | null>(null);
+  const [selectedDeletePlanned, setSelectedDeletePlanned] =
     useState<PlannedTransaction | null>(null);
   const [budgetMonthFilters, setBudgetMonthFilters] =
     useState<BudgetMonthTransactionFilters>({});
@@ -57,6 +61,7 @@ export default function Dashboard() {
   const [deletePlannedTransaction] = useDeletePlannedTransaction();
   const [deactivatePlannedTransaction] = useDeactivatePlannedTransaction();
   const [reactivatePlannedTransaction] = useReactivatePlannedTransaction();
+  const { showToast } = useToast();
 
   useEffect(() => {
     if (hasBootstrappedRef.current) return;
@@ -147,12 +152,19 @@ export default function Dashboard() {
   async function handlePayTransaction(transaction: BudgetMonthTransaction) {
     if (!budgetMonthId) return;
 
-    await payTransaction({
-      variables: {
-        budgetMonthId,
-        transactionId: transaction.id,
-      },
-    });
+    try {
+      await payTransaction({
+        variables: {
+          budgetMonthId,
+          transactionId: transaction.id,
+        },
+      });
+    } catch (err) {
+      showToast(
+        err instanceof Error ? err.message : "Não foi possível pagar a transação.",
+      );
+      return;
+    }
 
     await refetchBudgetMonthData();
   }
@@ -164,12 +176,19 @@ export default function Dashboard() {
   async function confirmDeleteTransaction() {
     if (!budgetMonthId || !selectedDeleteTransaction) return;
 
-    await deleteManualTransaction({
-      variables: {
-        budgetMonthId,
-        transactionId: selectedDeleteTransaction.id,
-      },
-    });
+    try {
+      await deleteManualTransaction({
+        variables: {
+          budgetMonthId,
+          transactionId: selectedDeleteTransaction.id,
+        },
+      });
+    } catch (err) {
+      showToast(
+        err instanceof Error ? err.message : "Não foi possível excluir o lançamento.",
+      );
+      return;
+    }
 
     setSelectedDeleteTransaction(null);
     await refetchBudgetMonthData();
@@ -183,18 +202,59 @@ export default function Dashboard() {
     setSelectedEditPlanned(transaction);
   }
 
-  async function handleDeletePlanned(transaction: PlannedTransaction) {
-    await deletePlannedTransaction({ variables: { id: transaction.id } });
+  function handleDeletePlanned(transaction: PlannedTransaction) {
+    setSelectedDeletePlanned(transaction);
+  }
+
+  async function confirmDeletePlanned() {
+    if (!selectedDeletePlanned) return;
+
+    try {
+      await deletePlannedTransaction({
+        variables: { id: selectedDeletePlanned.id },
+      });
+    } catch (err) {
+      showToast(
+        err instanceof Error
+          ? err.message
+          : "Não foi possível excluir o lançamento planejado.",
+      );
+      return;
+    }
+
+    setSelectedDeletePlanned(null);
     await refetchPlannedData();
   }
 
   async function handleDeactivatePlanned(transaction: PlannedTransaction) {
-    await deactivatePlannedTransaction({ variables: { id: transaction.id } });
+    try {
+      await deactivatePlannedTransaction({
+        variables: { id: transaction.id },
+      });
+    } catch (err) {
+      showToast(
+        err instanceof Error
+          ? err.message
+          : "Não foi possível desativar o lançamento planejado.",
+      );
+      return;
+    }
     await refetchPlannedData();
   }
 
   async function handleReactivatePlanned(transaction: PlannedTransaction) {
-    await reactivatePlannedTransaction({ variables: { id: transaction.id } });
+    try {
+      await reactivatePlannedTransaction({
+        variables: { id: transaction.id },
+      });
+    } catch (err) {
+      showToast(
+        err instanceof Error
+          ? err.message
+          : "Não foi possível reativar o lançamento planejado.",
+      );
+      return;
+    }
     await refetchPlannedData();
   }
 
@@ -237,6 +297,13 @@ export default function Dashboard() {
         transaction={selectedDeleteTransaction}
         onClose={() => setSelectedDeleteTransaction(null)}
         onConfirm={confirmDeleteTransaction}
+      />
+
+      <DeletePlannedTransactionModal
+        open={Boolean(selectedDeletePlanned)}
+        transaction={selectedDeletePlanned}
+        onClose={() => setSelectedDeletePlanned(null)}
+        onConfirm={confirmDeletePlanned}
       />
 
       {isLoading ? (

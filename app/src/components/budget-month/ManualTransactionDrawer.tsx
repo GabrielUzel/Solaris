@@ -4,7 +4,9 @@ import Button from "../Button";
 import Dropdown from "../Dropdown";
 import { useListCategories } from "../../hooks/category";
 import { useCreateManualTransaction } from "../../hooks/budget-month";
+import { useToast } from "../Toast";
 import type { FinancialType, PaymentMethod } from "../../api/types/common";
+import DateInput from "../DateInput";
 
 type Props = {
   open: boolean;
@@ -21,6 +23,7 @@ export default function ManualTransactionDrawer({
 }: Props) {
   const { data: categoriesData } = useListCategories();
   const [createManualTransaction, { loading }] = useCreateManualTransaction();
+  const { showToast } = useToast();
 
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState(0);
@@ -53,21 +56,30 @@ export default function ManualTransactionDrawer({
     e.preventDefault();
     if (!budgetMonthId) return;
 
-    await createManualTransaction({
-      variables: {
-        budgetMonthId,
-        input: {
-          description,
-          expectedAmount: amount,
-          type,
-          categoryId,
-          paymentMethod,
-          occurredOn,
-          status: "EXPECTED",
-          notes: notes || undefined,
+    try {
+      await createManualTransaction({
+        variables: {
+          budgetMonthId,
+          input: {
+            description,
+            expectedAmount: amount,
+            type,
+            categoryId,
+            paymentMethod,
+            occurredOn,
+            status: "EXPECTED",
+            notes: notes || undefined,
+          },
         },
-      },
-    });
+      });
+    } catch (err) {
+      showToast(
+        err instanceof Error
+          ? err.message
+          : "Não foi possível adicionar o lançamento ao mês.",
+      );
+      return;
+    }
 
     await onSuccess?.();
     onClose();
@@ -165,11 +177,9 @@ export default function ManualTransactionDrawer({
             </Field>
 
             <Field label="Data da ocorrência">
-              <input
-                type="date"
+              <DateInput
                 value={occurredOn}
-                onChange={(e) => setOccurredOn(e.target.value)}
-                className="rounded-lg border border-primary-border bg-input-background px-3 py-2 text-sm text-primary-text focus:border-focus-border focus:outline-none"
+                onChange={setOccurredOn}
               />
             </Field>
 

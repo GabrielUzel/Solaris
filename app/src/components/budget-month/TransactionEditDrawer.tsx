@@ -3,12 +3,14 @@ import Button from "../Button";
 import Dropdown from "../Dropdown";
 import { useListCategories } from "../../hooks/category";
 import { useUpdateManualTransaction } from "../../hooks/budget-month";
+import { useToast } from "../Toast";
 import {
   useGetPlannedTransactionById,
   useUpdatePlannedTransaction,
 } from "../../hooks/planned-transaction";
 import type { FinancialType, PaymentMethod } from "../../api/types/common";
 import type { BudgetMonthTransaction } from "../../api/types/budget-month";
+import DateInput from "../DateInput";
 
 type Props = {
   open: boolean;
@@ -30,6 +32,7 @@ export default function TransactionEditDrawer({
   const { data: categoriesData } = useListCategories();
   const [updateManualTransaction, { loading: updatingManual }] =
     useUpdateManualTransaction();
+  const { showToast } = useToast();
   const [updatePlannedTransaction, { loading: updatingPlanned }] =
     useUpdatePlannedTransaction();
 
@@ -89,40 +92,49 @@ export default function TransactionEditDrawer({
 
     const amountInCents = Math.round(Number(amount.replace(",", ".")) * 100);
 
-    if (isManual) {
-      if (!budgetMonthId) return;
+    try {
+      if (isManual) {
+        if (!budgetMonthId) return;
 
-      await updateManualTransaction({
-        variables: {
-          budgetMonthId,
-          transactionId: transaction.id,
-          input: {
-            description,
-            expectedAmount: amountInCents,
-            type,
-            categoryId,
-            paymentMethod,
-            occurredOn,
-            notes: notes || undefined,
+        await updateManualTransaction({
+          variables: {
+            budgetMonthId,
+            transactionId: transaction.id,
+            input: {
+              description,
+              expectedAmount: amountInCents,
+              type,
+              categoryId,
+              paymentMethod,
+              occurredOn,
+              notes: notes || undefined,
+            },
           },
-        },
-      });
-    } else {
-      if (!transaction.plannedTransactionId) return;
+        });
+      } else {
+        if (!transaction.plannedTransactionId) return;
 
-      await updatePlannedTransaction({
-        variables: {
-          id: transaction.plannedTransactionId,
-          input: {
-            description,
-            amount: amountInCents,
-            categoryId,
-            paymentMethod,
-            dayOfMonth: Number(dayOfMonth),
-            notes: notes || undefined,
+        await updatePlannedTransaction({
+          variables: {
+            id: transaction.plannedTransactionId,
+            input: {
+              description,
+              amount: amountInCents,
+              categoryId,
+              paymentMethod,
+              dayOfMonth: Number(dayOfMonth),
+              notes: notes || undefined,
+            },
           },
-        },
-      });
+        });
+      }
+    } catch (err) {
+      showToast(
+        err instanceof Error
+          ? err.message
+          : "Não foi possível salvar o lançamento.",
+      );
+      return;
     }
 
     await onSuccess?.();
@@ -210,11 +222,9 @@ export default function TransactionEditDrawer({
 
             {isManual ? (
               <Field label="Data da ocorrência">
-                <input
-                  type="date"
+                <DateInput
                   value={occurredOn}
-                  onChange={(e) => setOccurredOn(e.target.value)}
-                  className="rounded-lg border border-primary-border bg-input-background px-3 py-2 text-sm text-primary-text focus:border-focus-border focus:outline-none"
+                  onChange={setOccurredOn}
                 />
               </Field>
             ) : (

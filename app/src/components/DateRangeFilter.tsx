@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { DayPicker, type DateRange } from "react-day-picker";
-import "react-day-picker/style.css";
 
 type Props = {
   startDate?: string | null;
