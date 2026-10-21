@@ -1,9 +1,9 @@
 [package]
 name = "Solaris"
-version = "0.6.0"
+version = "0.6.1"
 description = "A Tauri App"
 authors = ["GabrielUzel"]
-edition = "2026"
+edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
