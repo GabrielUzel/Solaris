@@ -4,6 +4,7 @@ import Category from "../assets/icons/category.svg?react";
 import Card from "../assets/icons/card.svg?react";
 import Logo from "../assets/icons/logo.svg?react";
 import Investment from "../assets/icons/investment.svg?react";
+import History from "../assets/icons/history.svg?react";
 import ThemeToggle from "../components/ThemeToggle";
 
 type NavItem = {
@@ -15,6 +16,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   { label: "Dashboard", route: "dashboard", Icon: Dashboard },
   { label: "Investimentos", route: "investments", Icon: Investment },
+  { label: "Histórico", route: "history", Icon: History },
   { label: "Categorias", route: "categories", Icon: Category },
   { label: "Cartões", route: "cards", Icon: Card },
 ];

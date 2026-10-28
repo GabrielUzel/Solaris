@@ -42,6 +42,38 @@ defmodule SolarisCore.Infrastructure.Repositories.BudgetMonthRepo do
     end
   end
 
+  def exists_by_reference?(year, month) do
+    BudgetMonthSchema
+    |> where([bm], bm.reference_year == ^year and bm.reference_month == ^month)
+    |> Repo.exists?()
+  end
+
+  def list_by_status(status) do
+    BudgetMonthSchema
+    |> where([bm], bm.status == ^status)
+    |> order_by([bm], asc: bm.reference_year, asc: bm.reference_month)
+    |> preload(:transactions)
+    |> Repo.all()
+    |> Enum.map(&to_domain/1)
+  end
+
+  def list_closed_years do
+    BudgetMonthSchema
+    |> where([bm], bm.status == :closed)
+    |> select([bm], bm.reference_year)
+    |> distinct(true)
+    |> order_by([bm], asc: bm.reference_year)
+    |> Repo.all()
+  end
+
+  def update_status(id, status) do
+    with {:ok, schema} <- ok_or_error(Repo.get(BudgetMonthSchema, id)),
+         changeset <- BudgetMonthSchema.changeset(schema, %{status: status}),
+         {:ok, _updated} <- Repo.update(changeset) do
+      get(id)
+    end
+  end
+
   def update(%BudgetMonth{id: id} = domain) do
     with {:ok, schema} <- ok_or_error(Repo.get(BudgetMonthSchema, id)) do
       Ecto.Multi.new()
@@ -124,7 +156,8 @@ defmodule SolarisCore.Infrastructure.Repositories.BudgetMonthRepo do
       reference_month: domain.reference_month,
       starts_on: domain.starts_on,
       ends_on: domain.ends_on,
-      initialized_at: domain.initialized_at
+      initialized_at: domain.initialized_at,
+      status: domain.status
     }
   end
 
@@ -156,7 +189,8 @@ defmodule SolarisCore.Infrastructure.Repositories.BudgetMonthRepo do
         reference_month: schema.reference_month,
         starts_on: schema.starts_on,
         ends_on: schema.ends_on,
-        initialized_at: schema.initialized_at
+        initialized_at: schema.initialized_at,
+        status: schema.status
       })
 
     %{budget_month | transactions: transactions}

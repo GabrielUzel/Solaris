@@ -5,7 +5,6 @@ import {
   ENSURE_BUDGET_MONTH_BY_REFERENCE,
   ENSURE_CURRENT_BUDGET_MONTH,
   GET_BUDGET_MONTH_BY_REFERENCE,
-  GET_BUDGET_MONTH_PREVIEW,
   GET_BUDGET_MONTH_SUMMARY,
   GET_CURRENT_BUDGET_MONTH,
   LIST_BUDGET_MONTH_TRANSACTIONS,
@@ -22,7 +21,6 @@ import {
   type EnsureBudgetMonthByReferenceData,
   type EnsureCurrentBudgetMonthData,
   type GetBudgetMonthByReferenceData,
-  type GetBudgetMonthPreviewData,
   type GetBudgetMonthSummaryData,
   type GetCurrentBudgetMonthData,
   type ListBudgetMonthTransactionsData,
@@ -44,13 +42,6 @@ export function useGetCurrentBudgetMonth() {
 export function useGetBudgetMonthByReference(year?: number, month?: number) {
   return useQuery<GetBudgetMonthByReferenceData, BudgetMonthByReferenceVars>(
     GET_BUDGET_MONTH_BY_REFERENCE,
-    year != null && month != null ? { variables: { year, month } } : skipToken,
-  );
-}
-
-export function useGetBudgetMonthPreview(year?: number, month?: number) {
-  return useQuery<GetBudgetMonthPreviewData, BudgetMonthByReferenceVars>(
-    GET_BUDGET_MONTH_PREVIEW,
     year != null && month != null ? { variables: { year, month } } : skipToken,
   );
 }

@@ -43,12 +43,12 @@ export default function DeleteCategoryModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
       <button
-        className="absolute inset-0 bg-black/50"
+        className="absolute inset-0 animate-overlay-fade bg-black/50"
         aria-label="Fechar confirmação"
         onClick={onClose}
       />
 
-      <div className="relative z-10 w-full max-w-md rounded-2xl border border-primary-border bg-card-background shadow-2xl">
+      <div className="relative z-10 w-full max-w-md animate-modal-pop rounded-2xl border border-primary-border bg-card-background shadow-2xl">
         <div className="flex flex-col gap-4 p-6">
           <div>
             <h2 className="text-lg font-semibold text-primary-text">

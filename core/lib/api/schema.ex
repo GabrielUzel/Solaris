@@ -6,6 +6,7 @@ defmodule SolarisCoreWeb.Api.Schema do
   import_types(SolarisCoreWeb.Api.Types.CategoryTypes)
   import_types(SolarisCoreWeb.Api.Types.PlannedTransactionTypes)
   import_types(SolarisCoreWeb.Api.Types.BudgetMonthTypes)
+  import_types(SolarisCoreWeb.Api.Types.FinancialAnalyticsTypes)
   import_types(SolarisCoreWeb.Api.Types.AssetTypes)
   import_types(SolarisCoreWeb.Api.Types.InvestmentTypes)
   import_types(SolarisCoreWeb.Api.Types.InvestmentTransactionTypes)

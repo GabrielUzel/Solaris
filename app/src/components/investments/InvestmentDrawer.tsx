@@ -62,12 +62,12 @@ export default function InvestmentDrawer({ investmentId, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50">
       <button
-        className="absolute inset-0 bg-black/50"
+        className="absolute inset-0 animate-overlay-fade bg-black/50"
         aria-label="Fechar detalhes"
         onClick={onClose}
       />
 
-      <div className="absolute right-0 top-0 h-full w-full max-w-xl overflow-y-auto border-l border-primary-border bg-card-background shadow-2xl">
+      <div className="absolute right-0 top-0 h-full w-full max-w-xl animate-drawer-slide overflow-y-auto border-l border-primary-border bg-card-background shadow-2xl">
         {investmentLoading && !currentInvestment ? (
           <DrawerSkeleton />
         ) : investmentError && !currentInvestment ? (

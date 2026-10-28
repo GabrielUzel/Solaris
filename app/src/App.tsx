@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import Categories from "./pages/Categories";
 import Cards from "./pages/Cards";
 import Investments from "./pages/Investments";
+import BudgetMonthHistoryPage from "./pages/BudgetMonthHistoryPage";
 import Settings from "./pages/Settings";
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
     categories: <Categories />,
     cards: <Cards />,
     investments: <Investments />,
+    history: <BudgetMonthHistoryPage />,
     settings: <Settings />,
   } as const;
 

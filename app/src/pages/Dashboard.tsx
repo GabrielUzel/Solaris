@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import Spinner from "../components/Spinner";
+import FinancialAnalyticsCard from "../components/analytics/FinancialAnalyticsCard";
 import ManualTransactionDrawer from "../components/budget-month/ManualTransactionDrawer";
 import PlannedTransactionDrawer from "../components/planned-transactions/PlannedTransactionDrawer";
 import PlannedTransactionEditDrawer from "../components/planned-transactions/PlannedTransactionEditDrawer";
 import TransactionEditDrawer from "../components/budget-month/TransactionEditDrawer";
 import BudgetMonthSummaryCards from "../components/budget-month/BudgetMonthSummaryCards";
 import BudgetMonthTransactionsCard from "../components/budget-month/BudgetMonthTransactionsCard";
+import NextMonthPreviewCard from "../components/budget-month/NextMonthPreviewCard";
 import PlannedTransactionsCard from "../components/planned-transactions/PlannedTransactionsCard";
 import DeleteManualTransactionModal from "../components/budget-month/DeleteManualTransactionModal";
 import DeletePlannedTransactionModal from "../components/planned-transactions/DeletePlannedTransactionModal";
@@ -316,12 +318,8 @@ export default function Dashboard() {
         <>
           <BudgetMonthSummaryCards summary={summary} />
 
-          <div className="flex flex-col gap-3 rounded-xl border border-primary-border bg-card-background p-5 shadow-default">
-            <h2 className="text-sm font-semibold text-primary-text">Análise</h2>
-            <div className="flex h-40 items-center justify-center rounded-lg bg-secondary-background text-sm text-secondary-text">
-              Gráficos em breve
-            </div>
-          </div>
+          <FinancialAnalyticsCard />
+          <NextMonthPreviewCard />
 
           <BudgetMonthTransactionsCard
             hasBudgetMonth={hasBudgetMonth}

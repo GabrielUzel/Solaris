@@ -43,7 +43,8 @@ defmodule SolarisCore.Application.Queries.GetBudgetMonthSummary do
            total_paid: income_paid - expense_paid,
            transaction_count: length(transactions),
            is_closed: pending_expense_count == 0,
-           pending_expense_count: pending_expense_count
+           pending_expense_count: pending_expense_count,
+           status: budget_month.status
          }}
     end
   end

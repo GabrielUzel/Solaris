@@ -31,5 +31,37 @@ defmodule SolarisCoreWeb.Api.Queries.BudgetMonthQueries do
       arg(:month, non_null(:integer))
       resolve(&BudgetMonthResolver.get_budget_month_preview/3)
     end
+
+    field :get_next_unopened_budget_month_reference, :next_budget_month_reference do
+      resolve(&BudgetMonthResolver.get_next_unopened_budget_month_reference/3)
+    end
+
+    field :get_financial_analytics, non_null(:financial_analytics) do
+      arg(:start_date, non_null(:date))
+      arg(:end_date, non_null(:date))
+      arg(:category_limit, :integer)
+      arg(:category_page, :integer)
+      resolve(&BudgetMonthResolver.get_financial_analytics/3)
+    end
+
+    field :get_financial_analytics_page, non_null(:financial_analytics_page) do
+      arg(:page, non_null(:integer))
+      arg(:page_size, :integer)
+      resolve(&BudgetMonthResolver.get_financial_analytics_page/3)
+    end
+
+    field :list_pending_budget_months, non_null(list_of(non_null(:budget_month))) do
+      resolve(&BudgetMonthResolver.list_pending_budget_months/3)
+    end
+
+    field :list_closed_budget_months_by_year,
+          non_null(list_of(non_null(:closed_budget_month_report))) do
+      arg(:year, non_null(:integer))
+      resolve(&BudgetMonthResolver.list_closed_budget_months_by_year/3)
+    end
+
+    field :list_years_with_closed_budget_months, non_null(list_of(non_null(:integer))) do
+      resolve(&BudgetMonthResolver.list_years_with_closed_budget_months/3)
+    end
   end
 end

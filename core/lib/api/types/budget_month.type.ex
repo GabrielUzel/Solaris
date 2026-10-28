@@ -1,6 +1,12 @@
 defmodule SolarisCoreWeb.Api.Types.BudgetMonthTypes do
   use Absinthe.Schema.Notation
 
+  enum :budget_month_status do
+    value(:ongoing)
+    value(:pending)
+    value(:closed)
+  end
+
   object :budget_month_transaction do
     field(:id, non_null(:id))
     field(:planned_transaction_id, :id)
@@ -26,6 +32,7 @@ defmodule SolarisCoreWeb.Api.Types.BudgetMonthTypes do
     field(:starts_on, non_null(:date))
     field(:ends_on, non_null(:date))
     field(:initialized_at, :string)
+    field(:status, non_null(:budget_month_status))
     field(:transactions, non_null(list_of(non_null(:budget_month_transaction))))
   end
 
@@ -40,15 +47,54 @@ defmodule SolarisCoreWeb.Api.Types.BudgetMonthTypes do
     field(:total_paid, non_null(:integer))
     field(:transaction_count, non_null(:integer))
     field(:is_closed, non_null(:boolean))
+    field(:status, non_null(:budget_month_status))
     field(:pending_expense_count, non_null(:integer))
+  end
+
+  object :closed_budget_month_report do
+    field(:id, non_null(:id))
+    field(:reference_year, non_null(:integer))
+    field(:reference_month, non_null(:integer))
+    field(:income_total, non_null(:integer))
+    field(:expense_total, non_null(:integer))
+    field(:balance, non_null(:integer))
+    field(:transaction_count, non_null(:integer))
+    field(:transactions, non_null(list_of(non_null(:budget_month_transaction))))
   end
 
   object :budget_month_preview do
     field(:reference_year, non_null(:integer))
     field(:reference_month, non_null(:integer))
     field(:exists_as_budget_month, non_null(:boolean))
-    field(:transactions, non_null(list_of(non_null(:planned_transaction))))
-    field(:summary, non_null(:budget_month_summary))
+
+    field(:transactions, non_null(list_of(non_null(:budget_month_preview_transaction))))
+
+    field(:summary, non_null(:budget_month_preview_summary))
+  end
+
+  object :budget_month_preview_transaction do
+    field(:id, non_null(:id))
+    field(:planned_transaction_id, non_null(:id))
+    field(:description, non_null(:string))
+    field(:amount, non_null(:integer))
+    field(:type, non_null(:financial_type))
+    field(:payment_method, non_null(:payment_method))
+    field(:day_of_month, non_null(:integer))
+    field(:occurred_on, non_null(:date))
+    field(:category_name, :string)
+    field(:category_color, :string)
+  end
+
+  object :budget_month_preview_summary do
+    field(:income_expected, non_null(:integer))
+    field(:expense_expected, non_null(:integer))
+    field(:projected_balance, non_null(:integer))
+    field(:transaction_count, non_null(:integer))
+  end
+
+  object :next_budget_month_reference do
+    field(:year, non_null(:integer))
+    field(:month, non_null(:integer))
   end
 
   input_object :create_manual_transaction_input do

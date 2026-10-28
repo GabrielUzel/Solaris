@@ -123,12 +123,12 @@ export function ModalShell({
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center px-4">
       <button
-        className="absolute inset-0 bg-black/50"
+        className="absolute inset-0 animate-overlay-fade bg-black/50"
         aria-label="Fechar modal"
         onClick={onClose}
       />
 
-      <div className="relative z-10 w-full max-w-2xl rounded-2xl border border-primary-border bg-card-background shadow-2xl">
+      <div className="relative z-10 w-full max-w-2xl animate-modal-pop rounded-2xl border border-primary-border bg-card-background shadow-2xl">
         <div className="flex flex-col gap-4 p-6">
           <h2 className="text-lg font-semibold text-primary-text">{title}</h2>
           {children}
