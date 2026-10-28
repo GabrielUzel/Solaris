@@ -1,7 +1,13 @@
 import { useState } from "react";
 
 export type Route =
-  "welcome" | "dashboard" | "categories" | "cards" | "investments" | "settings";
+  | "welcome"
+  | "dashboard"
+  | "categories"
+  | "cards"
+  | "investments"
+  | "history"
+  | "settings";
 
 export function useRouter(initial: Route = "welcome") {
   const [route, setRoute] = useState<Route>(initial);

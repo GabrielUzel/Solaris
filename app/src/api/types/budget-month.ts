@@ -4,7 +4,8 @@ import type {
   TransactionOrigin,
   TransactionStatus,
 } from "./common";
-import type { PlannedTransaction } from "./planned-transaction";
+
+export type BudgetMonthStatus = "ONGOING" | "PENDING" | "CLOSED";
 
 export type BudgetMonth = {
   id: string;
@@ -13,6 +14,7 @@ export type BudgetMonth = {
   startsOn: string;
   endsOn: string;
   initializedAt?: string | null;
+  status: BudgetMonthStatus;
 };
 
 export type BudgetMonthTransaction = {
@@ -44,15 +46,19 @@ export type BudgetMonthSummary = {
   totalPaid: number;
   transactionCount: number;
   isClosed: boolean;
+  status: BudgetMonthStatus;
   pendingExpenseCount: number;
 };
 
-export type BudgetMonthPreview = {
+export type ClosedBudgetMonthReport = {
+  id: string;
   referenceYear: number;
   referenceMonth: number;
-  existsAsBudgetMonth: boolean;
-  transactions: PlannedTransaction[];
-  summary: BudgetMonthSummary;
+  incomeTotal: number;
+  expenseTotal: number;
+  balance: number;
+  transactionCount: number;
+  transactions: BudgetMonthTransaction[];
 };
 
 export type CreateManualTransactionInput = {

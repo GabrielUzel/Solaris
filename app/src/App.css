@@ -124,6 +124,39 @@ body {
     --color-input-background: var(--input-background);
     --color-badge-background: var(--badge-background);
     --shadow-default: 0 1px 3px var(--default-shadow);
+
+    --animate-overlay-fade: overlay-fade 150ms ease-out;
+    --animate-modal-pop: modal-pop 180ms ease-out;
+    --animate-drawer-slide: drawer-slide 200ms ease-out;
+
+    @keyframes overlay-fade {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes modal-pop {
+        from {
+            opacity: 0;
+            transform: scale(0.97) translateY(6px);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    @keyframes drawer-slide {
+        from {
+            transform: translateX(100%);
+        }
+        to {
+            transform: translateX(0);
+        }
+    }
 }
 
 * {

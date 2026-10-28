@@ -2,7 +2,6 @@ import { gql } from "@apollo/client";
 
 import type {
   BudgetMonth,
-  BudgetMonthPreview,
   BudgetMonthSummary,
   BudgetMonthTransaction,
   BudgetMonthTransactionFilters,
@@ -17,10 +16,6 @@ export type GetCurrentBudgetMonthData = {
 
 export type GetBudgetMonthByReferenceData = {
   getBudgetMonthByReference: BudgetMonth | null;
-};
-
-export type GetBudgetMonthPreviewData = {
-  getBudgetMonthPreview: BudgetMonthPreview;
 };
 
 export type ListBudgetMonthTransactionsData = {
@@ -126,6 +121,7 @@ export const GET_CURRENT_BUDGET_MONTH = gql`
       startsOn
       endsOn
       initializedAt
+      status
     }
   }
 `;
@@ -139,6 +135,7 @@ export const GET_BUDGET_MONTH_BY_REFERENCE = gql`
       startsOn
       endsOn
       initializedAt
+      status
     }
   }
 `;
@@ -185,44 +182,7 @@ export const GET_BUDGET_MONTH_SUMMARY = gql`
       transactionCount
       isClosed
       pendingExpenseCount
-    }
-  }
-`;
-
-export const GET_BUDGET_MONTH_PREVIEW = gql`
-  query GetBudgetMonthPreview($year: Int!, $month: Int!) {
-    getBudgetMonthPreview(year: $year, month: $month) {
-      referenceYear
-      referenceMonth
-      existsAsBudgetMonth
-      transactions {
-        id
-        description
-        amount
-        type
-        categoryId
-        categoryName
-        categoryColor
-        categoryType
-        paymentMethod
-        dayOfMonth
-        startsOn
-        active
-        notes
-      }
-      summary {
-        referenceYear
-        referenceMonth
-        incomeExpected
-        incomePaid
-        expenseExpected
-        expensePaid
-        totalExpected
-        totalPaid
-        transactionCount
-        isClosed
-        pendingExpenseCount
-      }
+      status
     }
   }
 `;
@@ -236,6 +196,7 @@ export const ENSURE_CURRENT_BUDGET_MONTH = gql`
       startsOn
       endsOn
       initializedAt
+      status
     }
   }
 `;
@@ -249,6 +210,7 @@ export const ENSURE_BUDGET_MONTH_BY_REFERENCE = gql`
       startsOn
       endsOn
       initializedAt
+      status
     }
   }
 `;
@@ -262,6 +224,7 @@ export const OPEN_BUDGET_MONTH = gql`
       startsOn
       endsOn
       initializedAt
+      status
     }
   }
 `;

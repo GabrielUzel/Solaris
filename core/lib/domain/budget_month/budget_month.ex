@@ -9,6 +9,7 @@ defmodule SolarisCore.Finance.Domain.BudgetMonth do
     :starts_on,
     :ends_on,
     :initialized_at,
+    status: :ongoing,
     transactions: []
   ]
 
@@ -29,7 +30,8 @@ defmodule SolarisCore.Finance.Domain.BudgetMonth do
              attrs[:reference_year],
              attrs[:reference_month]
            ),
-         :ok <- validate_date_order(attrs[:starts_on], attrs[:ends_on]) do
+         :ok <- validate_date_order(attrs[:starts_on], attrs[:ends_on]),
+         :ok <- validate_status(attrs[:status]) do
       {:ok, struct!(__MODULE__, attrs)}
     end
   end
@@ -91,6 +93,46 @@ defmodule SolarisCore.Finance.Domain.BudgetMonth do
 
   def closed?(%__MODULE__{} = budget_month) do
     pending_expenses(budget_month) == []
+  end
+
+  def close(%__MODULE__{status: :closed}), do: {:error, :invalid_status_transition}
+
+  def close(%__MODULE__{} = budget_month) do
+    if pending_expenses(budget_month) == [] do
+      {:ok, %{budget_month | status: :closed}}
+    else
+      {:error, :month_has_pending_expenses}
+    end
+  end
+
+  def mark_pending_if_expired(%__MODULE__{status: status}, %Date{} = _today)
+      when status != :ongoing do
+    {:error, :invalid_status_transition}
+  end
+
+  def mark_pending_if_expired(%__MODULE__{} = budget_month, %Date{} = today) do
+    if Date.compare(today, budget_month.ends_on) == :gt do
+      {:ok, %{budget_month | status: :pending}}
+    else
+      {:ok, budget_month}
+    end
+  end
+
+  def close_if_all_expenses_paid_on_month_end(
+        %__MODULE__{status: status},
+        %Date{} = _today
+      )
+      when status != :ongoing do
+    {:error, :invalid_status_transition}
+  end
+
+  def close_if_all_expenses_paid_on_month_end(%__MODULE__{} = budget_month, %Date{} = today) do
+    if Date.compare(today, budget_month.ends_on) == :gt and
+         pending_expenses(budget_month) == [] do
+      {:ok, %{budget_month | status: :closed}}
+    else
+      {:ok, budget_month}
+    end
   end
 
   defp update_transaction(
@@ -173,4 +215,8 @@ defmodule SolarisCore.Finance.Domain.BudgetMonth do
   end
 
   defp validate_date_order(_, _), do: :ok
+
+  defp validate_status(status) when status in [:ongoing, :pending, :closed], do: :ok
+  defp validate_status(status) when is_nil(status), do: :ok
+  defp validate_status(_), do: {:error, :invalid_status}
 end

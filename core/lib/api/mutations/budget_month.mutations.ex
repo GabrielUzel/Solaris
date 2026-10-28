@@ -56,5 +56,10 @@ defmodule SolarisCoreWeb.Api.Mutations.BudgetMonthMutations do
       arg(:transaction_id, non_null(:id))
       resolve(&BudgetMonthResolver.delete_manual_transaction/3)
     end
+
+    field :close_budget_month, non_null(:budget_month) do
+      arg(:budget_month_id, non_null(:id))
+      resolve(&BudgetMonthResolver.close_budget_month/3)
+    end
   end
 end

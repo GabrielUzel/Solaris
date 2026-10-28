@@ -22,6 +22,8 @@ import {
   type UpdatePlannedTransactionVars,
 } from "../api/planned-transaction";
 
+import { GET_BUDGET_MONTH_PREVIEW } from "../api/budget-month-preview";
+
 export function useListActivePlannedTransactions() {
   return useQuery<ListActivePlannedTransactionsData>(
     LIST_ACTIVE_PLANNED_TRANSACTIONS,
@@ -40,7 +42,10 @@ export function useCreatePlannedTransaction() {
     CreatePlannedTransactionData,
     CreatePlannedTransactionVars
   >(CREATE_PLANNED_TRANSACTION, {
-    refetchQueries: [{ query: LIST_ACTIVE_PLANNED_TRANSACTIONS }],
+    refetchQueries: [
+      { query: LIST_ACTIVE_PLANNED_TRANSACTIONS },
+      { query: GET_BUDGET_MONTH_PREVIEW },
+    ],
     awaitRefetchQueries: true,
   });
 }
@@ -50,6 +55,7 @@ export function useUpdatePlannedTransaction() {
     UpdatePlannedTransactionData,
     UpdatePlannedTransactionVars
   >(UPDATE_PLANNED_TRANSACTION, {
+    refetchQueries: [{ query: GET_BUDGET_MONTH_PREVIEW }],
     awaitRefetchQueries: true,
   });
 }
@@ -59,6 +65,7 @@ export function useDeactivatePlannedTransaction() {
     DeactivatePlannedTransactionData,
     DeactivatePlannedTransactionVars
   >(DEACTIVATE_PLANNED_TRANSACTION, {
+    refetchQueries: [{ query: GET_BUDGET_MONTH_PREVIEW }],
     awaitRefetchQueries: true,
   });
 }
@@ -68,6 +75,7 @@ export function useReactivatePlannedTransaction() {
     ReactivatePlannedTransactionData,
     ReactivatePlannedTransactionVars
   >(REACTIVATE_PLANNED_TRANSACTION, {
+    refetchQueries: [{ query: GET_BUDGET_MONTH_PREVIEW }],
     awaitRefetchQueries: true,
   });
 }
@@ -77,6 +85,7 @@ export function useDeletePlannedTransaction() {
     DeletePlannedTransactionData,
     DeletePlannedTransactionVars
   >(DELETE_PLANNED_TRANSACTION, {
+    refetchQueries: [{ query: GET_BUDGET_MONTH_PREVIEW }],
     awaitRefetchQueries: true,
   });
 }

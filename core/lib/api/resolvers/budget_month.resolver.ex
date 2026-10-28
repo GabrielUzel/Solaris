@@ -8,11 +8,18 @@ defmodule SolarisCoreWeb.Api.Resolvers.BudgetMonthResolver do
   alias SolarisCore.Application.Commands.OpenBudgetMonth
   alias SolarisCore.Application.Commands.PayTransaction
   alias SolarisCore.Application.Commands.SkipTransaction
+  alias SolarisCore.Application.Commands.CloseBudgetMonth
   alias SolarisCore.Application.Queries.GetBudgetMonthByReference
   alias SolarisCore.Application.Queries.GetBudgetMonthPreview
   alias SolarisCore.Application.Queries.GetBudgetMonthSummary
   alias SolarisCore.Application.Queries.GetCurrentBudgetMonth
+  alias SolarisCore.Application.Queries.GetFinancialAnalytics
+  alias SolarisCore.Application.Queries.GetFinancialAnalyticsPage
+  alias SolarisCore.Application.Queries.GetNextUnopenedBudgetMonthReference
   alias SolarisCore.Application.Queries.ListBudgetMonthTransactions
+  alias SolarisCore.Application.Queries.ListClosedBudgetMonthsByYear
+  alias SolarisCore.Application.Queries.ListPendingBudgetMonths
+  alias SolarisCore.Application.Queries.ListYearsWithClosedBudgetMonths
 
   def get_current_budget_month(_parent, _args, _resolution) do
     GetCurrentBudgetMonth.execute()
@@ -33,6 +40,23 @@ defmodule SolarisCoreWeb.Api.Resolvers.BudgetMonthResolver do
 
   def get_budget_month_preview(_parent, %{year: year, month: month}, _resolution) do
     GetBudgetMonthPreview.execute(year, month)
+  end
+
+  def get_next_unopened_budget_month_reference(_parent, _args, _resolution) do
+    GetNextUnopenedBudgetMonthReference.execute()
+  end
+
+  def get_financial_analytics(
+        _parent,
+        %{start_date: start_date, end_date: end_date},
+        _resolution
+      ) do
+    GetFinancialAnalytics.execute(start_date, end_date)
+  end
+
+  def get_financial_analytics_page(_parent, %{page: page} = args, _resolution) do
+    page_size = Map.get(args, :page_size, 36)
+    GetFinancialAnalyticsPage.execute(page, page_size)
   end
 
   def open_budget_month(_parent, %{year: year, month: month}, _resolution) do
@@ -102,6 +126,22 @@ defmodule SolarisCoreWeb.Api.Resolvers.BudgetMonthResolver do
       {:ok, _} -> {:ok, true}
       error -> error
     end
+  end
+
+  def list_pending_budget_months(_parent, _args, _resolution) do
+    {:ok, ListPendingBudgetMonths.execute()}
+  end
+
+  def list_closed_budget_months_by_year(_parent, %{year: year}, _resolution) do
+    ListClosedBudgetMonthsByYear.execute(year)
+  end
+
+  def list_years_with_closed_budget_months(_parent, _args, _resolution) do
+    {:ok, ListYearsWithClosedBudgetMonths.execute()}
+  end
+
+  def close_budget_month(_parent, %{budget_month_id: id}, _resolution) do
+    CloseBudgetMonth.execute(id)
   end
 
   defp to_domain_attrs(input) do

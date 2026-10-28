@@ -91,12 +91,12 @@ export default function PlannedTransactionEditDrawer({
   return (
     <div className="fixed inset-0 z-50">
       <button
-        className="absolute inset-0 bg-black/50"
+        className="absolute inset-0 animate-overlay-fade bg-black/50"
         aria-label="Fechar modal"
         onClick={onClose}
       />
 
-      <div className="absolute right-0 top-0 h-full w-full max-w-md border-l border-primary-border bg-card-background shadow-2xl">
+      <div className="absolute right-0 top-0 h-full w-full max-w-md animate-drawer-slide border-l border-primary-border bg-card-background shadow-2xl">
         <div className="flex h-full flex-col">
           <div className="border-b border-primary-border px-6 py-4">
             <h2 className="text-sm font-semibold text-primary-text">
