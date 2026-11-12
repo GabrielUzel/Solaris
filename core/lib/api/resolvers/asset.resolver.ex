@@ -7,15 +7,12 @@ defmodule SolarisCoreWeb.Api.Resolvers.AssetResolver do
   alias SolarisCore.Application.Queries.ValidateAssetTicker
   alias SolarisCore.Infrastructure.Repositories.InvestmentRepo
 
-  @error_messages %{
+  import SolarisCoreWeb.Api.ErrorMessages, only: [translate: 2]
+
+  @error_overrides %{
     asset_already_exists: "Já existe um ativo cadastrado com este ticker neste mercado",
-    asset_deactivated: "Já existe um ativo desativado com este ticker. Reative-o na seção de ativos desativados.",
-    ticker_required: "O ticker é obrigatório",
-    name_required: "O nome é obrigatório",
-    invalid_asset_type: "Tipo de ativo inválido",
-    invalid_asset_market: "Mercado inválido",
-    invalid_asset_currency: "Moeda inválida. Use \"BRL\" ou \"USD\"",
-    invalid_price_source: "Fonte de preços inválida",
+    asset_deactivated:
+      "Já existe um ativo desativado com este ticker. Reative-o na seção de ativos desativados.",
     us_market_requires_finnhub_price_source:
       "Ativos do mercado americano exigem a fonte de preços finnhub_us",
     invalid_b3_price_source:
@@ -26,24 +23,23 @@ defmodule SolarisCoreWeb.Api.Resolvers.AssetResolver do
     liquidity_required: "A liquidez é obrigatória para ativos de renda fixa",
     fixed_income_fields_not_allowed:
       "Campos de renda fixa não são permitidos para este tipo de ativo",
-    ticker_not_found: "Ticker não encontrado na fonte de preços. Verifique o ticker e o mercado selecionados.",
-    brapi_key_not_configured: "Chave da API Brapi não configurada. Configure-a em Configurações antes de cadastrar ativos.",
-    finnhub_key_not_configured: "Chave da API Finnhub não configurada. Configure-a em Configurações antes de cadastrar ativos.",
-    ticker_validation_unavailable: "Não foi possível validar o ticker no momento. Tente novamente em instantes.",
-    asset_has_open_investment: "Não é possível desativar: há uma posição aberta neste ativo",
-    asset_inactive: "Este ativo está desativado",
+    ticker_not_found:
+      "Ticker não encontrado na fonte de preços. Verifique o ticker e o mercado selecionados.",
+    brapi_key_not_configured:
+      "Chave da API Brapi não configurada. Configure-a em Configurações antes de cadastrar ativos.",
+    finnhub_key_not_configured:
+      "Chave da API Finnhub não configurada. Configure-a em Configurações antes de cadastrar ativos.",
+    ticker_validation_unavailable:
+      "Não foi possível validar o ticker no momento. Tente novamente em instantes.",
+    asset_has_open_investment:
+      "Não é possível desativar: há uma posição aberta neste ativo",
     not_found: "Ativo não encontrado"
   }
-
-  @default_error_message "Não foi possível concluir a operação"
 
   # Queries
 
   def asset(_parent, %{id: id}, _resolution) do
-    case GetAssetById.execute(id) do
-      {:error, :not_found} -> {:error, @error_messages[:not_found]}
-      result -> result
-    end
+    GetAssetById.execute(id) |> translate(@error_overrides)
   end
 
   def assets(_parent, args, _resolution) do
@@ -58,10 +54,7 @@ defmodule SolarisCoreWeb.Api.Resolvers.AssetResolver do
     input
     |> to_domain_attrs()
     |> ValidateAssetTicker.execute()
-    |> case do
-      {:ok, result} -> {:ok, result}
-      {:error, reason} -> {:error, Map.get(@error_messages, reason, @default_error_message)}
-    end
+    |> translate(@error_overrides)
   end
 
   def has_open_investment(asset, _args, _resolution) do
@@ -78,19 +71,19 @@ defmodule SolarisCoreWeb.Api.Resolvers.AssetResolver do
     input
     |> to_domain_attrs()
     |> CreateAsset.execute()
-    |> translate_error()
+    |> translate(@error_overrides)
   end
 
   def deactivate_asset(_parent, %{id: id}, _resolution) do
     id
     |> DeactivateAsset.execute()
-    |> translate_error()
+    |> translate(@error_overrides)
   end
 
   def reactivate_asset(_parent, %{id: id}, _resolution) do
     id
     |> ReactivateAsset.execute()
-    |> translate_error()
+    |> translate(@error_overrides)
   end
 
   defp to_domain_attrs(input) do
@@ -118,20 +111,6 @@ defmodule SolarisCoreWeb.Api.Resolvers.AssetResolver do
   rescue
     ArgumentError -> value
   end
-
-  defp translate_error({:error, %Ecto.Changeset{}}) do
-    {:error, "Dados inválidos. Verifique as informações enviadas."}
-  end
-
-  defp translate_error({:error, reason}) when is_atom(reason) do
-    {:error, Map.get(@error_messages, reason, @default_error_message)}
-  end
-
-  defp translate_error({:error, _reason}) do
-    {:error, @default_error_message}
-  end
-
-  defp translate_error(result), do: result
 
   defp decimal_to_float(nil), do: nil
   defp decimal_to_float(%Decimal{} = value), do: Decimal.to_float(value)

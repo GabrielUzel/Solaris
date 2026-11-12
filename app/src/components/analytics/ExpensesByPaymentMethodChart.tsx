@@ -60,7 +60,7 @@ export default function ExpensesByPaymentMethodChart({ data, loading }: Props) {
                   ))}
                 </Pie>
                 <Tooltip
-                  wrapperStyle={{ outline: "none" }}
+                  wrapperStyle={{ outline: "none", zIndex: 10 }}
                   content={({ active, payload }) => {
                     if (!active || !payload?.length) {
                       return null;

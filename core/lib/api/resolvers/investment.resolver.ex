@@ -12,21 +12,6 @@ defmodule SolarisCoreWeb.Api.Resolvers.InvestmentResolver do
 
   @dataloader_source :investments
 
-  @error_messages %{
-    not_found: "Registro não encontrado",
-    investment_closed: "A posição está encerrada e não aceita novas movimentações",
-    insufficient_quantity: "Quantidade vendida maior que a quantidade disponível na posição",
-    invalid_sale_type: "Tipo de venda inválido",
-    invalid_quantity: "Quantidade inválida",
-    invalid_unit_price_cents: "Preço unitário inválido",
-    exchange_rate_provider_not_configured: "Provedor de câmbio não configurado",
-    asset_inactive: "Este ativo está desativado. Reative-o antes de criar uma posição.",
-    unauthorized: "Chave da API inválida ou não autorizada. Verifique nas Configurações.",
-    rate_limited: "Limite de requisições da API excedido. Tente novamente em instantes."
-  }
-
-  @default_error_message "Não foi possível concluir a operação"
-
   # Queries
 
   def investment(_parent, %{id: id}, _resolution) do
@@ -178,22 +163,9 @@ defmodule SolarisCoreWeb.Api.Resolvers.InvestmentResolver do
   defp parse_status("closed"), do: {:ok, :closed}
   defp parse_status(_other), do: {:error, "Status inválido. Use \"open\" ou \"closed\"."}
 
-  defp translate_error(result, overrides \\ %{})
-
-  defp translate_error({:error, %Ecto.Changeset{}}, _overrides) do
-    {:error, "Dados inválidos. Verifique as informações enviadas."}
+  defp translate_error(result, overrides \\ %{}) do
+    SolarisCoreWeb.Api.ErrorMessages.translate(result, overrides)
   end
-
-  defp translate_error({:error, reason}, overrides) when is_atom(reason) do
-    message = Map.get(overrides, reason) || Map.get(@error_messages, reason, @default_error_message)
-    {:error, message}
-  end
-
-  defp translate_error({:error, _reason}, _overrides) do
-    {:error, @default_error_message}
-  end
-
-  defp translate_error(result, _overrides), do: result
 
   defp decimal_to_float(nil), do: nil
   defp decimal_to_float(%Decimal{} = value), do: Decimal.to_float(value)

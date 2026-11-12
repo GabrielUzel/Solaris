@@ -37,7 +37,7 @@ defmodule SolarisCore.MixProject do
       {:gettext, "~> 0.26"},
       {:jason, "~> 1.4"},
       {:dns_cluster, "~> 0.1.3"},
-      {:bandit, "~> 1.12.5"},
+      {:bandit, "~> 1.12"},
       {:absinthe, "~> 1.11"},
       {:absinthe_plug, "~> 1.5.10"},
       {:cors_plug, "~> 3.0.3"},

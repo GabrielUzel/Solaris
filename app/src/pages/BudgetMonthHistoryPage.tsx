@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Spinner from "../components/Spinner";
 import ClosedMonthCard from "../components/budget-month-history/ClosedMonthCard";
+import ExportExpensesPdfButton from "../components/budget-month-history/ExportExpensesPdfButton";
 import HistoryEmptyState from "../components/budget-month-history/HistoryEmptyState";
 import YearSelector from "../components/budget-month-history/YearSelector";
 import { useClosedBudgetMonthsByYear } from "../hooks/use-closed-budget-months-by-year";
@@ -43,13 +44,17 @@ export default function BudgetMonthHistoryPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold text-primary-text">Histórico</h1>
 
-        {years.length > 0 ? (
-          <YearSelector
-            years={years}
-            selectedYear={selectedYear}
-            onChange={setSelectedYear}
-          />
-        ) : null}
+        <div className="flex items-center gap-3">
+          {years.length > 0 ? (
+            <YearSelector
+              years={years}
+              selectedYear={selectedYear}
+              onChange={setSelectedYear}
+            />
+          ) : null}
+
+          <ExportExpensesPdfButton />
+        </div>
       </div>
 
       {yearsLoading ? (

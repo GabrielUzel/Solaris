@@ -21,29 +21,31 @@ defmodule SolarisCoreWeb.Api.Resolvers.BudgetMonthResolver do
   alias SolarisCore.Application.Queries.ListPendingBudgetMonths
   alias SolarisCore.Application.Queries.ListYearsWithClosedBudgetMonths
 
+  import SolarisCoreWeb.Api.ErrorMessages, only: [translate: 1]
+
   def get_current_budget_month(_parent, _args, _resolution) do
-    GetCurrentBudgetMonth.execute()
+    GetCurrentBudgetMonth.execute() |> translate()
   end
 
   def get_budget_month_by_reference(_parent, %{year: year, month: month}, _resolution) do
-    GetBudgetMonthByReference.execute(year, month)
+    GetBudgetMonthByReference.execute(year, month) |> translate()
   end
 
   def list_budget_month_transactions(_parent, %{budget_month_id: id} = args, _resolution) do
     filters = Map.get(args, :filters, %{})
-    ListBudgetMonthTransactions.execute(id, filters)
+    ListBudgetMonthTransactions.execute(id, filters) |> translate()
   end
 
   def get_budget_month_summary(_parent, %{budget_month_id: id}, _resolution) do
-    GetBudgetMonthSummary.execute(id)
+    GetBudgetMonthSummary.execute(id) |> translate()
   end
 
   def get_budget_month_preview(_parent, %{year: year, month: month}, _resolution) do
-    GetBudgetMonthPreview.execute(year, month)
+    GetBudgetMonthPreview.execute(year, month) |> translate()
   end
 
   def get_next_unopened_budget_month_reference(_parent, _args, _resolution) do
-    GetNextUnopenedBudgetMonthReference.execute()
+    GetNextUnopenedBudgetMonthReference.execute() |> translate()
   end
 
   def get_financial_analytics(
@@ -51,24 +53,24 @@ defmodule SolarisCoreWeb.Api.Resolvers.BudgetMonthResolver do
         %{start_date: start_date, end_date: end_date},
         _resolution
       ) do
-    GetFinancialAnalytics.execute(start_date, end_date)
+    GetFinancialAnalytics.execute(start_date, end_date) |> translate()
   end
 
   def get_financial_analytics_page(_parent, %{page: page} = args, _resolution) do
     page_size = Map.get(args, :page_size, 36)
-    GetFinancialAnalyticsPage.execute(page, page_size)
+    GetFinancialAnalyticsPage.execute(page, page_size) |> translate()
   end
 
   def open_budget_month(_parent, %{year: year, month: month}, _resolution) do
-    OpenBudgetMonth.execute(year, month)
+    OpenBudgetMonth.execute(year, month) |> translate()
   end
 
   def ensure_current_budget_month(_parent, _args, _resolution) do
-    EnsureCurrentBudgetMonth.execute()
+    EnsureCurrentBudgetMonth.execute() |> translate()
   end
 
   def ensure_budget_month_by_reference(_parent, %{year: year, month: month}, _resolution) do
-    EnsureBudgetMonthByReference.execute(year, month)
+    EnsureBudgetMonthByReference.execute(year, month) |> translate()
   end
 
   def initialize_budget_month_from_planned_transactions(
@@ -76,7 +78,7 @@ defmodule SolarisCoreWeb.Api.Resolvers.BudgetMonthResolver do
         %{budget_month_id: id},
         _resolution
       ) do
-    InitializeBudgetMonthFromPlannedTransactions.execute(id)
+    InitializeBudgetMonthFromPlannedTransactions.execute(id) |> translate()
   end
 
   def create_manual_transaction(
@@ -84,7 +86,7 @@ defmodule SolarisCoreWeb.Api.Resolvers.BudgetMonthResolver do
         %{budget_month_id: id, input: input},
         _resolution
       ) do
-    CreateManualTransaction.execute(id, to_domain_attrs(input))
+    CreateManualTransaction.execute(id, to_domain_attrs(input)) |> translate()
   end
 
   def pay_transaction(
@@ -98,7 +100,7 @@ defmodule SolarisCoreWeb.Api.Resolvers.BudgetMonthResolver do
         _ -> nil
       end
 
-    PayTransaction.execute(bm_id, tx_id, actual_amount)
+    PayTransaction.execute(bm_id, tx_id, actual_amount) |> translate()
   end
 
   def skip_transaction(
@@ -106,7 +108,7 @@ defmodule SolarisCoreWeb.Api.Resolvers.BudgetMonthResolver do
         %{budget_month_id: bm_id, transaction_id: tx_id},
         _resolution
       ) do
-    SkipTransaction.execute(bm_id, tx_id)
+    SkipTransaction.execute(bm_id, tx_id) |> translate()
   end
 
   def update_manual_transaction(
@@ -114,7 +116,7 @@ defmodule SolarisCoreWeb.Api.Resolvers.BudgetMonthResolver do
         %{budget_month_id: bm_id, transaction_id: tx_id, input: input},
         _resolution
       ) do
-    UpdateManualTransaction.execute(bm_id, tx_id, to_domain_attrs(input))
+    UpdateManualTransaction.execute(bm_id, tx_id, to_domain_attrs(input)) |> translate()
   end
 
   def delete_manual_transaction(
@@ -124,7 +126,7 @@ defmodule SolarisCoreWeb.Api.Resolvers.BudgetMonthResolver do
       ) do
     case DeleteManualTransaction.execute(bm_id, tx_id) do
       {:ok, _} -> {:ok, true}
-      error -> error
+      error -> translate(error)
     end
   end
 
@@ -133,7 +135,7 @@ defmodule SolarisCoreWeb.Api.Resolvers.BudgetMonthResolver do
   end
 
   def list_closed_budget_months_by_year(_parent, %{year: year}, _resolution) do
-    ListClosedBudgetMonthsByYear.execute(year)
+    ListClosedBudgetMonthsByYear.execute(year) |> translate()
   end
 
   def list_years_with_closed_budget_months(_parent, _args, _resolution) do
@@ -141,7 +143,7 @@ defmodule SolarisCoreWeb.Api.Resolvers.BudgetMonthResolver do
   end
 
   def close_budget_month(_parent, %{budget_month_id: id}, _resolution) do
-    CloseBudgetMonth.execute(id)
+    CloseBudgetMonth.execute(id) |> translate()
   end
 
   defp to_domain_attrs(input) do

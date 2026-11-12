@@ -11,6 +11,7 @@ import {
 import type { FinancialType, PaymentMethod } from "../../api/types/common";
 import type { BudgetMonthTransaction } from "../../api/types/budget-month";
 import DateInput from "../DateInput";
+import MoneyInput from "../MoneyInput";
 
 type Props = {
   open: boolean;
@@ -48,7 +49,7 @@ export default function TransactionEditDrawer({
   );
 
   const [description, setDescription] = useState("");
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState(0);
   const [type, setType] = useState<FinancialType>("EXPENSE");
   const [categoryId, setCategoryId] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("PIX");
@@ -63,7 +64,7 @@ export default function TransactionEditDrawer({
 
     if (isManual) {
       setDescription(transaction.description);
-      setAmount((transaction.expectedAmount / 100).toFixed(2));
+      setAmount(transaction.expectedAmount);
       setType(transaction.type);
       setCategoryId(transaction.categoryId);
       setPaymentMethod(transaction.paymentMethod);
@@ -71,7 +72,7 @@ export default function TransactionEditDrawer({
       setNotes(transaction.notes ?? "");
     } else if (plannedTransaction) {
       setDescription(plannedTransaction.description);
-      setAmount((plannedTransaction.amount / 100).toFixed(2));
+      setAmount(plannedTransaction.amount);
       setType(plannedTransaction.type);
       setCategoryId(plannedTransaction.categoryId);
       setPaymentMethod(plannedTransaction.paymentMethod);
@@ -90,7 +91,12 @@ export default function TransactionEditDrawer({
     e.preventDefault();
     if (!transaction) return;
 
-    const amountInCents = Math.round(Number(amount.replace(",", ".")) * 100);
+    if (!categoryId) {
+      showToast("Selecione uma categoria para o lançamento.");
+      return;
+    }
+
+    const amountInCents = amount;
 
     try {
       if (isManual) {
@@ -172,14 +178,7 @@ export default function TransactionEditDrawer({
             </Field>
 
             <Field label={isManual ? "Valor previsto" : "Valor"}>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="rounded-lg border border-primary-border bg-input-background px-3 py-2 text-sm text-primary-text focus:border-focus-border focus:outline-none"
-              />
+              <MoneyInput value={amount} onChange={setAmount} />
             </Field>
 
             {isManual && (

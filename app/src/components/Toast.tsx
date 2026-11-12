@@ -37,13 +37,24 @@ const colors: Record<ToastType, string> = {
   info: "bg-card-background border-info text-info",
 };
 
+// Motivos de erro do backend chegam como átomos serializados (ex.: "not_found").
+// Quando isso escapar da tradução da API, exibimos uma mensagem compreensível.
+const RAW_REASON_PATTERN = /^[a-z][a-z0-9_]*$/;
+
+function toUserMessage(message: string) {
+  return RAW_REASON_PATTERN.test(message.trim())
+    ? "Não foi possível concluir a operação."
+    : message;
+}
+
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastData[]>([]);
   const idRef = useRef(0);
 
   const showToast = useCallback((message: string, type: ToastType = "error") => {
     const id = ++idRef.current;
-    setToasts((prev) => [...prev, { id, message, type }]);
+    const safeMessage = type === "error" ? toUserMessage(message) : message;
+    setToasts((prev) => [...prev, { id, message: safeMessage, type }]);
   }, []);
 
   const dismiss = useCallback((id: number) => {
