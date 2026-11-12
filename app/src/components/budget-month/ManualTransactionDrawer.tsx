@@ -56,6 +56,11 @@ export default function ManualTransactionDrawer({
     e.preventDefault();
     if (!budgetMonthId) return;
 
+    if (!categoryId) {
+      showToast("Selecione uma categoria para o lançamento.");
+      return;
+    }
+
     try {
       await createManualTransaction({
         variables: {

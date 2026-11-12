@@ -69,17 +69,24 @@ function RegisterSaleForm({
       return;
     }
 
-    await registerSale({
-      variables: {
-        input: {
-          investmentId: investment.id,
-          quantity: parsedQuantity,
-          unitPriceCents,
-          transactionDate,
-          saleType,
+    try {
+      await registerSale({
+        variables: {
+          input: {
+            investmentId: investment.id,
+            quantity: parsedQuantity,
+            unitPriceCents,
+            transactionDate,
+            saleType,
+          },
         },
-      },
-    });
+      });
+    } catch (err) {
+      showToast(
+        err instanceof Error ? err.message : "Não foi possível registrar a venda.",
+      );
+      return;
+    }
 
     onClose();
   }

@@ -6,32 +6,35 @@ defmodule SolarisCoreWeb.Api.Resolvers.CategoryResolver do
   alias SolarisCore.Application.Queries.ListCategoriesByType
   alias SolarisCore.Application.Queries.GetCategoryById
 
+  import SolarisCoreWeb.Api.ErrorMessages, only: [translate: 1]
+
   def list_categories(_parent, _args, _resolution) do
-    ListCategories.execute()
+    ListCategories.execute() |> translate()
   end
 
   def list_categories_by_type(_parent, %{type: type}, _resolution) do
-    ListCategoriesByType.execute(type)
+    ListCategoriesByType.execute(type) |> translate()
   end
 
   def get_category_by_id(_parent, %{id: id}, _resolution) do
-    GetCategoryById.execute(id)
+    GetCategoryById.execute(id) |> translate()
   end
 
   def create_category(_parent, %{input: input}, _resolution) do
     input
     |> to_domain_attrs()
     |> CreateCategory.execute()
+    |> translate()
   end
 
   def update_category(_parent, %{id: id, input: input}, _resolution) do
-    UpdateCategory.execute(id, to_domain_attrs(input))
+    UpdateCategory.execute(id, to_domain_attrs(input)) |> translate()
   end
 
   def delete_category(_parent, %{id: id}, _resolution) do
     case DeleteCategory.execute(id) do
       {:ok, _} -> {:ok, true}
-      error -> error
+      error -> translate(error)
     end
   end
 

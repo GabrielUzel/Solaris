@@ -26,6 +26,10 @@
     --info-background: #bae6fd;
     --info-border: #7dd3fc;
     --info-text: #075985;
+    --error-color: #e11d48;
+    --success-color: #16a34a;
+    --warning-color: #d97706;
+    --info-color: #0284c7;
     --primary-color: #14b8a6;
     --secondary-color: #0f172a;
     --chart-background: #ffffff;
@@ -83,6 +87,10 @@ body {
     --info-background: #102f45;
     --info-border: #1d6587;
     --info-text: #7dd3fc;
+    --error-color: #f43f5e;
+    --success-color: #4ade80;
+    --warning-color: #fbbf24;
+    --info-color: #38bdf8;
     --primary-color: #2dd4bf;
     --secondary-color: #e2e8f0;
     --chart-background: #111828;

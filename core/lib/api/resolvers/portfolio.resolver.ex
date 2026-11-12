@@ -3,6 +3,8 @@ defmodule SolarisCoreWeb.Api.Resolvers.PortfolioResolver do
   alias SolarisCore.Application.Queries.GetInvestmentValueHistory
   alias SolarisCore.Application.Queries.GetPortfolioSummary
 
+  import SolarisCoreWeb.Api.ErrorMessages, only: [translate: 2]
+
   def portfolio_summary(_parent, _args, _resolution) do
     {:ok, summary} = GetPortfolioSummary.execute()
 
@@ -24,10 +26,7 @@ defmodule SolarisCoreWeb.Api.Resolvers.PortfolioResolver do
 
     case GetInvestmentValueHistory.execute(args[:investment_id], opts) do
       {:ok, points} -> {:ok, points}
-      {:error, :not_found} -> {:error, "Investimento não encontrado"}
-      {:error, :brapi_key_not_configured} -> {:error, "brapi_key_not_configured"}
-      {:error, :finnhub_key_not_configured} -> {:error, "finnhub_key_not_configured"}
-      {:error, reason} -> {:error, reason}
+      error -> translate(error, %{not_found: "Investimento não encontrado"})
     end
   end
 

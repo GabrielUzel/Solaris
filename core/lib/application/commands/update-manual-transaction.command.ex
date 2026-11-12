@@ -26,8 +26,22 @@ defmodule SolarisCore.Application.Commands.UpdateManualTransaction do
     end
   end
 
-  defp fetch_category_if_present(%{category_id: id}) when not is_nil(id), do: CategoryRepo.get(id)
+  defp fetch_category_if_present(%{category_id: id}) when is_binary(id) do
+    case String.trim(id) do
+      "" -> {:ok, nil}
+      category_id -> fetch_category(category_id)
+    end
+  end
+
+  defp fetch_category_if_present(%{category_id: id}) when not is_nil(id), do: fetch_category(id)
   defp fetch_category_if_present(_attrs), do: {:ok, nil}
+
+  defp fetch_category(id) do
+    case CategoryRepo.get(id) do
+      {:error, :not_found} -> {:error, :category_not_found}
+      result -> result
+    end
+  end
 
   defp validate_category_compatibility(nil, _attrs, _existing_transaction), do: :ok
 
@@ -39,9 +53,16 @@ defmodule SolarisCore.Application.Commands.UpdateManualTransaction do
   defp build_transaction_attrs(existing_transaction, attrs) do
     existing_transaction
     |> Map.from_struct()
-    |> Map.merge(attrs)
+    |> Map.merge(drop_blank_category(attrs))
     |> Map.put(:origin, :manual)
   end
+
+  # Categoria em branco no update significa "manter a atual", não apagar.
+  defp drop_blank_category(%{category_id: id} = attrs) when is_binary(id) do
+    if String.trim(id) == "", do: Map.delete(attrs, :category_id), else: attrs
+  end
+
+  defp drop_blank_category(attrs), do: attrs
 
   defp replace_transaction(%BudgetMonth{} = budget_month, transaction_id, updated_transaction) do
     updated_transactions =

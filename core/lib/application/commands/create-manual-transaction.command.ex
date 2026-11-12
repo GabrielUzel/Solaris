@@ -17,8 +17,22 @@ defmodule SolarisCore.Application.Commands.CreateManualTransaction do
     end
   end
 
-  defp fetch_category_if_present(%{category_id: id}) when not is_nil(id), do: CategoryRepo.get(id)
+  defp fetch_category_if_present(%{category_id: id}) when is_binary(id) do
+    case String.trim(id) do
+      "" -> {:error, :category_required}
+      category_id -> fetch_category(category_id)
+    end
+  end
+
+  defp fetch_category_if_present(%{category_id: id}) when not is_nil(id), do: fetch_category(id)
   defp fetch_category_if_present(_attrs), do: {:ok, nil}
+
+  defp fetch_category(id) do
+    case CategoryRepo.get(id) do
+      {:error, :not_found} -> {:error, :category_not_found}
+      result -> result
+    end
+  end
 
   defp validate_category_compatibility(nil, _attrs), do: :ok
 

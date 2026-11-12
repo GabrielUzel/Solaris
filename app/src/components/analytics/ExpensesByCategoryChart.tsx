@@ -27,6 +27,15 @@ export default function ExpensesByCategoryChart({ data, loading }: Props) {
       CATEGORY_FALLBACK_COLORS[index % CATEGORY_FALLBACK_COLORS.length],
   }));
 
+  const maxLabelWidth = Math.max(
+    ...coloredSlices.map(
+      (slice) =>
+        `${formatCurrency(slice.totalAmount)} · ${formatPercent(slice.percentage)}`
+          .length * 7,
+    ),
+    0,
+  );
+
   return (
     <div className="flex h-full min-h-0 flex-col">
       <h3 className="mb-3 text-sm font-semibold text-primary-text">
@@ -46,7 +55,7 @@ export default function ExpensesByCategoryChart({ data, loading }: Props) {
             <BarChart
               data={coloredSlices}
               layout="vertical"
-              margin={{ top: 0, right: 8, left: 8, bottom: 0 }}
+              margin={{ top: 0, right: maxLabelWidth + 14, left: 8, bottom: 0 }}
             >
               <XAxis type="number" hide />
               <YAxis

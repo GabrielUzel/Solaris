@@ -231,6 +231,7 @@ function AssetRow({
                 Cancelar
               </Button>
               <Button
+                variant="danger"
                 type="button"
                 onClick={handleDeactivate}
                 disabled={deactivating}
