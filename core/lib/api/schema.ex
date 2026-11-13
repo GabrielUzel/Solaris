@@ -15,6 +15,7 @@ defmodule SolarisCoreWeb.Api.Schema do
   import_types(SolarisCoreWeb.Api.Types.InvestmentHistoryPointTypes)
   import_types(SolarisCoreWeb.Api.Types.IncomeHistoryPointTypes)
   import_types(SolarisCoreWeb.Api.Types.ApiKeyTypes)
+  import_types(SolarisCoreWeb.Api.Types.CreditCardTypes)
 
   import_types(SolarisCoreWeb.Api.Queries.CategoryQueries)
   import_types(SolarisCoreWeb.Api.Queries.BudgetMonthQueries)
@@ -23,6 +24,7 @@ defmodule SolarisCoreWeb.Api.Schema do
   import_types(SolarisCoreWeb.Api.Queries.InvestmentQueries)
   import_types(SolarisCoreWeb.Api.Queries.PortfolioQueries)
   import_types(SolarisCoreWeb.Api.Queries.SettingsQueries)
+  import_types(SolarisCoreWeb.Api.Queries.CreditCardQueries)
 
   import_types(SolarisCoreWeb.Api.Mutations.AssetMutations)
   import_types(SolarisCoreWeb.Api.Mutations.CategoryMutations)
@@ -30,6 +32,7 @@ defmodule SolarisCoreWeb.Api.Schema do
   import_types(SolarisCoreWeb.Api.Mutations.BudgetMonthMutations)
   import_types(SolarisCoreWeb.Api.Mutations.InvestmentMutations)
   import_types(SolarisCoreWeb.Api.Mutations.SettingsMutations)
+  import_types(SolarisCoreWeb.Api.Mutations.CreditCardMutations)
 
   def plugins do
     [Absinthe.Middleware.Dataloader | Absinthe.Plugin.defaults()]
@@ -48,6 +51,7 @@ defmodule SolarisCoreWeb.Api.Schema do
     import_fields(:investment_queries)
     import_fields(:portfolio_queries)
     import_fields(:settings_queries)
+    import_fields(:credit_card_queries)
   end
 
   mutation do
@@ -57,5 +61,6 @@ defmodule SolarisCoreWeb.Api.Schema do
     import_fields(:budget_month_mutations)
     import_fields(:investment_mutations)
     import_fields(:settings_mutations)
+    import_fields(:credit_card_mutations)
   end
 end

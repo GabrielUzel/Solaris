@@ -33,6 +33,11 @@ export type BudgetMonthTransaction = {
   origin: TransactionOrigin;
   status: TransactionStatus;
   notes?: string | null;
+  creditCardId?: string | null;
+  installmentGroupId?: string | null;
+  installmentNumber?: number | null;
+  installmentsTotal?: number | null;
+  purchasedOn?: string | null;
 };
 
 export type BudgetMonthSummary = {
@@ -87,6 +92,7 @@ export type UpdateManualTransactionInput = {
   occurredOn?: string;
   status?: TransactionStatus;
   notes?: string | null;
+  creditCardId?: string;
 };
 
 export type BudgetMonthTransactionFilters = {

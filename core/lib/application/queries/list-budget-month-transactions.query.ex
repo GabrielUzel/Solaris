@@ -35,6 +35,11 @@ defmodule SolarisCore.Application.Queries.ListBudgetMonthTransactions do
             origin: t.origin,
             status: t.status,
             notes: t.notes,
+            credit_card_id: t.credit_card_id,
+            installment_group_id: t.installment_group_id,
+            installment_number: t.installment_number,
+            installments_total: t.installments_total,
+            purchased_on: t.purchased_on,
             created_at: t.inserted_at,
             updated_at: t.updated_at
           }

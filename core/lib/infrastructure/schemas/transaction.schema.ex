@@ -19,9 +19,19 @@ defmodule SolarisCore.Infrastructure.Schemas.TransactionSchema do
     field(:origin, Ecto.Enum, values: [:manual, :planned])
     field(:status, Ecto.Enum, values: [:expected, :paid, :skipped])
     field(:notes, :string)
+    field(:installment_group_id, :binary_id)
+    field(:installment_number, :integer)
+    field(:installments_total, :integer)
+    field(:purchased_on, :date)
 
     belongs_to(:budget_month, SolarisCore.Infrastructure.Schemas.BudgetMonthSchema)
     belongs_to(:category, SolarisCore.Infrastructure.Schemas.CategorySchema)
+
+    belongs_to(:credit_card, SolarisCore.Infrastructure.Schemas.CreditCardSchema,
+      foreign_key: :credit_card_id,
+      references: :id,
+      type: :binary_id
+    )
 
     belongs_to(:planned_transaction, SolarisCore.Infrastructure.Schemas.PlannedTransactionSchema,
       foreign_key: :planned_transaction_id,
@@ -47,7 +57,12 @@ defmodule SolarisCore.Infrastructure.Schemas.TransactionSchema do
       :status,
       :notes,
       :budget_month_id,
-      :planned_transaction_id
+      :planned_transaction_id,
+      :credit_card_id,
+      :installment_group_id,
+      :installment_number,
+      :installments_total,
+      :purchased_on
     ])
     |> validate_required([
       :id,
@@ -58,8 +73,7 @@ defmodule SolarisCore.Infrastructure.Schemas.TransactionSchema do
       :payment_method,
       :occurred_on,
       :origin,
-      :status,
-      :budget_month_id
+      :status
     ])
     |> validate_number(:expected_amount, greater_than: 0)
     |> validate_number(:actual_amount, greater_than: 0)
