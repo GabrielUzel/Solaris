@@ -2,6 +2,7 @@ defmodule SolarisCoreWeb.Api.Resolvers.CreditCardResolver do
   alias SolarisCore.Application.Commands.CreateCreditCard
   alias SolarisCore.Application.Commands.CreateCreditCardPurchase
   alias SolarisCore.Application.Commands.DeactivateCreditCard
+  alias SolarisCore.Application.Commands.ReactivateCreditCard
   alias SolarisCore.Application.Commands.UpdateCreditCard
   alias SolarisCore.Application.Queries.GetCreditCardInvoices
   alias SolarisCore.Application.Queries.ListCreditCards
@@ -29,6 +30,10 @@ defmodule SolarisCoreWeb.Api.Resolvers.CreditCardResolver do
 
   def deactivate_credit_card(_parent, %{id: id}, _resolution) do
     DeactivateCreditCard.execute(id) |> translate()
+  end
+
+  def reactivate_credit_card(_parent, %{id: id}, _resolution) do
+    ReactivateCreditCard.execute(id) |> translate()
   end
 
   def create_credit_card_purchase(_parent, %{input: input}, _resolution) do

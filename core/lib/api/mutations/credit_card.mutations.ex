@@ -20,6 +20,11 @@ defmodule SolarisCoreWeb.Api.Mutations.CreditCardMutations do
       resolve(&CreditCardResolver.deactivate_credit_card/3)
     end
 
+    field :reactivate_credit_card, non_null(:credit_card) do
+      arg(:id, non_null(:id))
+      resolve(&CreditCardResolver.reactivate_credit_card/3)
+    end
+
     field :create_credit_card_purchase, non_null(list_of(non_null(:budget_month_transaction))) do
       arg(:input, non_null(:create_credit_card_purchase_input))
       resolve(&CreditCardResolver.create_credit_card_purchase/3)

@@ -5,6 +5,7 @@ import {
   DEACTIVATE_CREDIT_CARD,
   GET_CREDIT_CARD_INVOICES,
   LIST_CREDIT_CARDS,
+  REACTIVATE_CREDIT_CARD,
   UPDATE_CREDIT_CARD,
   type CreateCreditCardData,
   type CreateCreditCardPurchaseData,
@@ -15,6 +16,8 @@ import {
   type GetCreditCardInvoicesData,
   type GetCreditCardInvoicesVars,
   type ListCreditCardsData,
+  type ReactivateCreditCardData,
+  type ReactivateCreditCardVars,
   type UpdateCreditCardData,
   type UpdateCreditCardVars,
 } from "../api/credit-card";
@@ -60,9 +63,22 @@ export function useDeactivateCreditCard() {
   );
 }
 
+export function useReactivateCreditCard() {
+  return useMutation<ReactivateCreditCardData, ReactivateCreditCardVars>(
+    REACTIVATE_CREDIT_CARD,
+    {
+      refetchQueries: [{ query: LIST_CREDIT_CARDS }],
+      awaitRefetchQueries: true,
+    },
+  );
+}
+
 export function useCreateCreditCardPurchase() {
   return useMutation<
     CreateCreditCardPurchaseData,
     CreateCreditCardPurchaseVars
-  >(CREATE_CREDIT_CARD_PURCHASE);
+  >(CREATE_CREDIT_CARD_PURCHASE, {
+    refetchQueries: ["GetBudgetMonthPreview"],
+    awaitRefetchQueries: true,
+  });
 }

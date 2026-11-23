@@ -16,6 +16,10 @@ defmodule SolarisCore.Finance.Domain.CreditCard do
     {:ok, %{card | active: false}}
   end
 
+  def reactivate(%__MODULE__{} = card) do
+    {:ok, %{card | active: true}}
+  end
+
   defp validate_name(name) when is_binary(name) and byte_size(name) > 0, do: :ok
   defp validate_name(_), do: {:error, :name_required}
 

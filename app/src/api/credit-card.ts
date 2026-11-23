@@ -28,6 +28,14 @@ export type DeactivateCreditCardData = {
   deactivateCreditCard: CreditCard;
 };
 
+export type ReactivateCreditCardData = {
+  reactivateCreditCard: CreditCard;
+};
+
+export type ReactivateCreditCardVars = {
+  id: string;
+};
+
 export type CreateCreditCardPurchaseData = {
   createCreditCardPurchase: { id: string }[];
 };
@@ -173,6 +181,19 @@ export const UPDATE_CREDIT_CARD = gql`
 export const DEACTIVATE_CREDIT_CARD = gql`
   mutation DeactivateCreditCard($id: ID!) {
     deactivateCreditCard(id: $id) {
+      id
+      name
+      bank
+      closingDay
+      dueDay
+      active
+    }
+  }
+`;
+
+export const REACTIVATE_CREDIT_CARD = gql`
+  mutation ReactivateCreditCard($id: ID!) {
+    reactivateCreditCard(id: $id) {
       id
       name
       bank

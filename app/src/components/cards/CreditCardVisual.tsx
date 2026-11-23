@@ -55,10 +55,6 @@ export default function CreditCardVisual({
       </div>
 
       <div className="flex items-end justify-between gap-3">
-        <span className="font-mono text-sm opacity-70">
-          •••• •••• •••• ••••
-        </span>
-
         {hasDays && (
           <span className="text-right text-xs opacity-80">
             Fecha dia {closingDay} · Vence dia {dueDay}
