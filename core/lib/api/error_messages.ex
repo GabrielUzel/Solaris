@@ -53,8 +53,7 @@ defmodule SolarisCoreWeb.Api.ErrorMessages do
     paid_transaction_requires_actual_amount: "Informe o valor realizado para marcar como pago",
     skipped_transaction_cannot_have_actual_amount:
       "Um lançamento ignorado não pode ter valor realizado",
-    cannot_remove_planned_transaction:
-      "Lançamentos planejados não podem ser removidos do mês",
+    cannot_remove_planned_transaction: "Lançamentos planejados não podem ser removidos do mês",
     planned_transaction_already_materialized:
       "Este lançamento planejado já foi lançado neste mês",
 
@@ -116,8 +115,26 @@ defmodule SolarisCoreWeb.Api.ErrorMessages do
     gross_amount_cents_must_be_positive: "O valor bruto deve ser maior que zero",
     net_amount_cents_must_be_non_negative: "O valor líquido não pode ser negativo",
     net_amount_cannot_exceed_gross: "O valor líquido não pode ser maior que o bruto",
-    xirr_not_converged:
-      "Não foi possível calcular a rentabilidade (XIRR) para este período",
+    xirr_not_converged: "Não foi possível calcular a rentabilidade (XIRR) para este período",
+
+    # Cartões de crédito
+    credit_card_required: "Selecione um cartão para pagamento no crédito",
+    credit_card_not_found: "Cartão não encontrado",
+    credit_card_inactive: "Este cartão está desativado e não pode ser usado em novos lançamentos",
+    credit_card_fields_not_allowed:
+      "Campos de cartão de crédito não são permitidos para esta forma de pagamento",
+    credit_card_only_for_expenses: "Apenas despesas podem ser vinculadas a um cartão de crédito",
+    invalid_purchased_on: "A data da compra é inválida",
+    invalid_installments_total: "O número de parcelas deve ser maior ou igual a 1",
+    invalid_installment_number: "O número da parcela é inválido",
+    installment_group_required: "Compras parceladas exigem um grupo de parcelas",
+    installment_group_must_be_nil: "Compra à vista não deve ter grupo de parcelas",
+    invalid_installment_amounts: "Informe um valor válido para cada parcela",
+    installments_amount_mismatch: "A soma das parcelas é diferente do valor total da compra",
+    bank_required: "O banco é obrigatório",
+    invalid_closing_day: "O dia de fechamento deve estar entre 1 e 28",
+    invalid_due_day: "O dia de vencimento deve estar entre 1 e 28",
+    invalid_active: "O status de ativação do cartão é inválido",
 
     # Configurações
     invalid_provider: "Provedor inválido. Use \"brapi\" ou \"finnhub\"."

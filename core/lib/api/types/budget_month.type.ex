@@ -23,6 +23,11 @@ defmodule SolarisCoreWeb.Api.Types.BudgetMonthTypes do
     field(:origin, non_null(:transaction_origin))
     field(:status, non_null(:transaction_status))
     field(:notes, :string)
+    field(:credit_card_id, :id)
+    field(:installment_group_id, :id)
+    field(:installment_number, :integer)
+    field(:installments_total, :integer)
+    field(:purchased_on, :date)
   end
 
   object :budget_month do
@@ -119,6 +124,7 @@ defmodule SolarisCoreWeb.Api.Types.BudgetMonthTypes do
     field(:occurred_on, :date)
     field(:status, :transaction_status)
     field(:notes, :string)
+    field(:credit_card_id, :id)
   end
 
   input_object :pay_transaction_input do

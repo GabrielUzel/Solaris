@@ -42,6 +42,7 @@
     --card-background: #ffffff;
     --input-background: #f1f5f9;
     --badge-background: #f0fdfa;
+    --card-selected-glow: rgba(20, 184, 166, 0.55);
 
     font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
     line-height: 1.5;
@@ -103,6 +104,7 @@ body {
     --card-background: #1a2332;
     --input-background: #111828;
     --badge-background: #134e4a;
+    --card-selected-glow: rgba(45, 212, 191, 0.55);
 }
 
 @theme {
@@ -132,6 +134,9 @@ body {
     --color-input-background: var(--input-background);
     --color-badge-background: var(--badge-background);
     --shadow-default: 0 1px 3px var(--default-shadow);
+    --shadow-card-selected:
+        0 0 0 2px var(--card-selected-glow),
+        0 0 14px 2px var(--card-selected-glow);
 
     --animate-overlay-fade: overlay-fade 150ms ease-out;
     --animate-modal-pop: modal-pop 180ms ease-out;

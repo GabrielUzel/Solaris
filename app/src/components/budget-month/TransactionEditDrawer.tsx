@@ -3,6 +3,7 @@ import Button from "../Button";
 import Dropdown from "../Dropdown";
 import { useListCategories } from "../../hooks/category";
 import { useUpdateManualTransaction } from "../../hooks/budget-month";
+import { useListCreditCards } from "../../hooks/credit-card";
 import { useToast } from "../Toast";
 import {
   useGetPlannedTransactionById,
@@ -12,6 +13,7 @@ import type { FinancialType, PaymentMethod } from "../../api/types/common";
 import type { BudgetMonthTransaction } from "../../api/types/budget-month";
 import DateInput from "../DateInput";
 import MoneyInput from "../MoneyInput";
+import { getBank } from "../../utils/banks";
 
 type Props = {
   open: boolean;
@@ -31,6 +33,7 @@ export default function TransactionEditDrawer({
   const isManual = transaction?.origin === "MANUAL";
 
   const { data: categoriesData } = useListCategories();
+  const { data: cardsData } = useListCreditCards();
   const [updateManualTransaction, { loading: updatingManual }] =
     useUpdateManualTransaction();
   const { showToast } = useToast();
@@ -48,6 +51,29 @@ export default function TransactionEditDrawer({
     [categories],
   );
 
+  const cards = cardsData?.listCreditCards ?? [];
+  const cardOptions = useMemo(() => {
+    const options = cards
+      .filter((card) => card.active)
+      .map((card) => ({
+        label: `${card.name} · ${getBank(card.bank).name}`,
+        value: card.id,
+      }));
+
+    const currentCardId = transaction?.creditCardId;
+    if (currentCardId && !options.some((option) => option.value === currentCardId)) {
+      const currentCard = cards.find((card) => card.id === currentCardId);
+      options.push({
+        label: `${currentCard?.name ?? "Cartão"} · ${
+          getBank(currentCard?.bank ?? "").name
+        } (desativado)`,
+        value: currentCardId,
+      });
+    }
+
+    return options;
+  }, [cards, transaction?.creditCardId]);
+
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState(0);
   const [type, setType] = useState<FinancialType>("EXPENSE");
@@ -56,6 +82,7 @@ export default function TransactionEditDrawer({
   const [occurredOn, setOccurredOn] = useState("");
   const [dayOfMonth, setDayOfMonth] = useState("1");
   const [notes, setNotes] = useState("");
+  const [creditCardId, setCreditCardId] = useState("");
 
   const loading = updatingManual || updatingPlanned;
 
@@ -70,6 +97,7 @@ export default function TransactionEditDrawer({
       setPaymentMethod(transaction.paymentMethod);
       setOccurredOn(transaction.occurredOn.slice(0, 10));
       setNotes(transaction.notes ?? "");
+      setCreditCardId(transaction.creditCardId ?? "");
     } else if (plannedTransaction) {
       setDescription(plannedTransaction.description);
       setAmount(plannedTransaction.amount);
@@ -114,6 +142,7 @@ export default function TransactionEditDrawer({
               paymentMethod,
               occurredOn,
               notes: notes || undefined,
+              ...(paymentMethod === "CREDIT_CARD" ? { creditCardId } : {}),
             },
           },
         });
@@ -218,6 +247,35 @@ export default function TransactionEditDrawer({
                 ]}
               />
             </Field>
+
+            {isManual && paymentMethod === "CREDIT_CARD" && (
+              <>
+                {transaction.installmentsTotal != null &&
+                  transaction.installmentsTotal > 1 && (
+                    <div className="flex flex-col gap-1">
+                      <span className="text-xs text-secondary-text">
+                        Compra parcelada — parcela{" "}
+                        {transaction.installmentNumber} de{" "}
+                        {transaction.installmentsTotal}
+                      </span>
+                      {transaction.installmentGroupId && (
+                        <span className="text-xs text-secondary-text">
+                          A troca de cartão será aplicada a todas as parcelas.
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                <Field label="Cartão">
+                  <Dropdown
+                    label="Selecione o cartão"
+                    value={creditCardId}
+                    onChange={setCreditCardId}
+                    options={cardOptions}
+                  />
+                </Field>
+              </>
+            )}
 
             {isManual ? (
               <Field label="Data da ocorrência">

@@ -164,6 +164,11 @@ export const LIST_BUDGET_MONTH_TRANSACTIONS = gql`
       origin
       status
       notes
+      creditCardId
+      installmentGroupId
+      installmentNumber
+      installmentsTotal
+      purchasedOn
     }
   }
 `;

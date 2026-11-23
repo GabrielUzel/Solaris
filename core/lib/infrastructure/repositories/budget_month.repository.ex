@@ -142,6 +142,11 @@ defmodule SolarisCore.Infrastructure.Repositories.BudgetMonthRepo do
              :origin,
              :status,
              :notes,
+             :credit_card_id,
+             :installment_group_id,
+             :installment_number,
+             :installments_total,
+             :purchased_on,
              :updated_at
            ]},
         conflict_target: :id
@@ -175,7 +180,12 @@ defmodule SolarisCore.Infrastructure.Repositories.BudgetMonthRepo do
       occurred_on: tx.occurred_on,
       origin: tx.origin,
       status: tx.status,
-      notes: tx.notes
+      notes: tx.notes,
+      credit_card_id: tx.credit_card_id,
+      installment_group_id: tx.installment_group_id,
+      installment_number: tx.installment_number,
+      installments_total: tx.installments_total,
+      purchased_on: tx.purchased_on
     }
   end
 
@@ -211,6 +221,11 @@ defmodule SolarisCore.Infrastructure.Repositories.BudgetMonthRepo do
         origin: schema.origin,
         status: schema.status,
         notes: schema.notes,
+        credit_card_id: schema.credit_card_id,
+        installment_group_id: schema.installment_group_id,
+        installment_number: schema.installment_number,
+        installments_total: schema.installments_total,
+        purchased_on: schema.purchased_on,
         created_at: schema.inserted_at,
         updated_at: schema.updated_at
       })
